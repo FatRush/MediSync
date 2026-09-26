@@ -1,0 +1,359 @@
+.doctor-citas {
+  --background: #f5f7fb;
+}
+
+.contenido {
+  padding: 20px;
+  padding-bottom: 90px;
+}
+
+
+/* ENCABEZADO */
+
+.encabezado {
+  margin-bottom: 15px;
+}
+
+.encabezado h1 {
+  margin: 0;
+
+  font-size: 24px;
+
+  font-weight: 700;
+
+  color: #222;
+}
+
+.encabezado p {
+  margin: 5px 0 0;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+
+/* FILTROS */
+
+.filtros {
+  margin-bottom: 20px;
+
+  overflow-x: auto;
+}
+
+ion-segment {
+  --background: #ffffff;
+
+  border-radius: 12px;
+
+  min-height: 45px;
+}
+
+ion-segment-button {
+  --color: #777;
+
+  --color-checked: #2878f0;
+
+  --indicator-color: #2878f0;
+
+  font-size: 12px;
+}
+
+
+/* LISTA */
+
+.lista {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+/* CARD */
+
+.cita-card {
+  margin: 0;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 15px
+    rgba(0, 0, 0, 0.06);
+}
+
+.cita-card ion-card-content {
+  padding: 18px;
+}
+
+
+/* HEADER */
+
+.cita-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.paciente {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.avatar {
+  width: 45px;
+
+  height: 45px;
+
+  border-radius: 50%;
+
+  background: #e8f1ff;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.avatar ion-icon {
+  font-size: 23px;
+
+  color: #2878f0;
+}
+
+.paciente h2 {
+  margin: 0;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  color: #222;
+}
+
+.paciente p {
+  margin: 3px 0 0;
+
+  font-size: 12px;
+
+  color: #888;
+}
+
+
+/* ESTADO */
+
+.estado {
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  text-transform: capitalize;
+
+  white-space: nowrap;
+}
+
+.estado.pendiente {
+  background: #fff3cd;
+
+  color: #856404;
+}
+
+.estado.confirmada {
+  background: #d4edda;
+
+  color: #155724;
+}
+
+.estado.atendida {
+  background: #d1ecf1;
+
+  color: #0c5460;
+}
+
+.estado.cancelada {
+  background: #f8d7da;
+
+  color: #721c24;
+}
+
+
+/* INFORMACIÓN */
+
+.informacion {
+  border-top: 1px solid #eeeeee;
+
+  padding-top: 14px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.dato {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: #555;
+
+  font-size: 13px;
+}
+
+.dato ion-icon {
+  color: #2878f0;
+
+  font-size: 18px;
+}
+
+
+/* ACCIONES */
+
+.acciones {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  margin-top: 15px;
+
+  border-top: 1px solid #eeeeee;
+
+  padding-top: 12px;
+}
+
+.acciones ion-button {
+  margin: 0;
+
+  --border-radius: 10px;
+
+  font-size: 11px;
+}
+
+
+/* SIN CITAS */
+
+.sin-citas {
+  height: 50vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  text-align: center;
+}
+
+.sin-citas ion-icon {
+  font-size: 65px;
+
+  color: #b7c8df;
+}
+
+.sin-citas h2 {
+  margin: 15px 0 5px;
+
+  color: #444;
+}
+
+.sin-citas p {
+  margin: 0;
+
+  color: #888;
+
+  font-size: 14px;
+}
+
+
+/* LOADING */
+
+.loading {
+  height: 80vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.loading ion-spinner {
+  width: 40px;
+
+  height: 40px;
+}
+
+.loading p {
+  color: #777;
+}
+
+
+/* FOOTER */
+
+ion-footer {
+  background: #ffffff;
+}
+
+ion-tab-bar {
+  --background: #ffffff;
+
+  height: 65px;
+
+  border-top:
+    1px solid #eeeeee;
+}
+
+ion-tab-button {
+  --color: #888;
+
+  --color-selected: #2878f0;
+}
+
+ion-tab-button ion-icon {
+  font-size: 22px;
+}
+
+
+/* MÓVIL */
+
+@media (max-width: 400px) {
+
+  .contenido {
+    padding: 15px;
+  }
+
+  .cita-card ion-card-content {
+    padding: 15px;
+  }
+
+  .cita-header {
+    flex-direction: column;
+  }
+
+}

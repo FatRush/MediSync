@@ -1,0 +1,93 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/super-admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Agregar Clínica</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <form (ngSubmit)="guardarClinica()">
+    <!-- NOMBRE DE LA CLÍNICA -->
+    <ion-item class="ion-margin-bottom" lines="full">
+      <ion-icon slot="start" name="business-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">Nombre de la Clínica *</ion-label>
+      <ion-input 
+        type="text" 
+        placeholder="Ej. Clínica San Rafael" 
+        [(ngModel)]="nombre" 
+        name="nombre" 
+        required>
+      </ion-input>
+    </ion-item>
+    <!-- HORARIOS DE ATENCIÓN -->
+    <ion-item lines="full">
+      <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">Hora de Apertura</ion-label>
+      <ion-input 
+        type="time" 
+        [(ngModel)]="horarioApertura" 
+        name="horarioApertura">
+      </ion-input>
+    </ion-item>
+    <ion-item class="ion-margin-bottom" lines="full">
+      <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">Hora de Cierre</ion-label>
+      <ion-input 
+        type="time" 
+        [(ngModel)]="horarioCierre" 
+        name="horarioCierre">
+      </ion-input>
+    </ion-item>
+    <!-- LOGO DE LA CLÍNICA -->
+    <ion-item lines="full">
+      <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">URL del Logo / Imagen</ion-label>
+      <ion-input 
+        type="url" 
+        placeholder="https://ejemplo.com/logo.png" 
+        [(ngModel)]="logoUrl" 
+        name="logoUrl">
+      </ion-input>
+    </ion-item>
+    <!-- VISTA PREVIA DEL LOGO -->
+    <div *ngIf="logoUrl" class="ion-text-center ion-margin-vertical">
+      <ion-note>Vista previa del logo:</ion-note>
+      <div style="display: flex; justify-content: center; margin-top: 8px;">
+        <ion-avatar style="width: 80px; height: 80px;">
+          <img [src]="logoUrl" (error)="logoUrl=''" />
+        </ion-avatar>
+      </div>
+    </div>
+    <!-- ASIGNACIÓN MÚLTIPLE DE DOCTORES -->
+    <ion-item class="ion-margin-bottom" lines="full">
+      <ion-icon slot="start" name="people-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">Asignar Doctores</ion-label>
+      <ion-select 
+        multiple="true" 
+        placeholder="Selecciona los doctores asignados" 
+        [(ngModel)]="doctoresSeleccionados" 
+        name="doctoresSeleccionados">
+        <ion-select-option *ngFor="let doc of listaDoctores" [value]="doc.id">
+          Dr. {{ doc.nombre || doc.nombreCompleto || doc.email }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <!-- NOTA SOBRE EL QR -->
+    <ion-item lines="none" class="ion-margin-vertical">
+      <ion-icon slot="start" name="qr-code-outline" color="medium"></ion-icon>
+      <ion-note color="medium">
+        El Código QR con acceso automático a esta sede se generará al guardar.
+      </ion-note>
+    </ion-item>
+    <!-- BOTÓN PARA GUARDAR -->
+    <ion-button 
+      expand="block" 
+      color="primary" 
+      type="submit" 
+      class="ion-margin-top">
+      <ion-icon slot="start" name="save-outline"></ion-icon>
+      Guardar Clínica
+    </ion-button>
+  </form>
+</ion-content>

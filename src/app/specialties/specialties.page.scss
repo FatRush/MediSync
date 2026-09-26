@@ -1,0 +1,18 @@
+ion-content {
+  --background: #f4f5f8;
+}
+
+ion-list {
+  background: transparent;
+  margin-top: 10px;
+  
+  ion-item {
+    --border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+}
+
+ion-fab {
+  margin: 16px;
+}

@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dr(a). Soporte MediSync</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding chat-container">
+  <!-- Listado de mensajes -->
+  <div *ngFor="let msg of mensajes" [ngClass]="{'user-message': msg.remitente === 'usuario', 'ai-message': msg.remitente === 'ia'}" class="message-wrapper">
+    <div class="bubble">
+      <p>{{ msg.texto }}</p>
+      
+      <!-- Botón dinámico si la IA sugiere agendar cita -->
+      <div *ngIf="msg.mostrarBotonCita" class="ion-margin-top">
+        <ion-button expand="block" size="small" color="success" (click)="agendarCita(msg.especialidad)">
+          Agendar cita con {{ msg.especialidad }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicador de que la IA está escribiendo -->
+  <div *ngIf="isTyping" class="ai-message message-wrapper">
+    <div class="bubble typing-indicator">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-padding-bottom">
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-input 
+        [(ngModel)]="nuevoMensaje" 
+        placeholder="Escribe una duda o síntoma..." 
+        (keyup.enter)="enviarMensaje()">
+      </ion-input>
+      <ion-button slot="end" fill="solid" (click)="enviarMensaje()" [disabled]="!nuevoMensaje.trim()">
+        ENVIAR
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-footer>

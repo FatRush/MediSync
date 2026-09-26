@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/my-appointments">
+      </ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      Detalle de cita
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+    <div class="contenedor" *ngIf="cita">
+    <div class="estado" [class]="cita.estado">
+      {{ cita.estado }}
+    </div>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          Médico
+        </ion-card-subtitle>
+        <ion-card-title>
+          {{ cita.medicoNombre }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="dato">
+          <span>
+            Especialidad
+          </span>
+          <strong>
+            {{ cita.especialidad }}
+          </strong>
+        </div>
+        <div class="dato">
+          <span>
+            Fecha
+          </span>
+          <strong>
+            {{ cita.fecha }}
+          </strong>
+        </div>
+        <div class="dato">
+          <span>
+            Hora
+          </span>
+          <strong>
+            {{ cita.hora }}
+          </strong>
+        </div>
+        <div class="dato">
+          <span>
+            Motivo de consulta
+          </span>
+          <strong>
+            {{ cita.motivo }}
+          </strong>
+                </div>
+      </ion-card-content>
+    </ion-card>
+    <ion-button
+      expand="block"
+      color="danger"
+      *ngIf="
+        cita.estado === 'pendiente' ||
+        cita.estado === 'confirmada'
+      "(click)="cancelarCita()">
+      Cancelar cita
+    </ion-button>
+    <ion-button
+  expand="block"
+  fill="outline"
+  routerLink="/my-appointments"
+  routerDirection="back">
+  Volver a mis citas
+</ion-button>
+  </div>
+</ion-content>

@@ -1,0 +1,163 @@
+ion-content {
+  --background: #ffffff;
+}
+
+ion-toolbar {
+  --background: #ffffff;
+  --color: #333333;
+  border-bottom: 1px solid #eeeeee;
+}
+
+ion-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.contenedor {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px 25px 40px;
+}
+
+h2 {
+  color: #16a6c9;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 25px;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  margin-bottom: 10px;
+
+  border-bottom: 1px solid #dddddd;
+}
+
+ion-label {
+  color: #777 !important;
+  font-size: 12px !important;
+}
+
+ion-input,
+ion-select {
+  color: #333 !important;
+  --color: #333333;
+  font-size: 14px;
+}
+
+/* --- REGLAS CORREGIDAS PARA ALINEAR EL ICONO A LA DERECHA --- */
+ion-select {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+}
+
+/* Expande el contenedor interno de Shadow DOM de Ionic */
+ion-select::part(container) {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+ion-select::part(text) {
+  flex: 1;
+  text-align: left;
+}
+
+ion-select::part(icon) {
+  margin-left: auto;
+}
+/* ------------------------------------------------------------- */
+
+.sangre {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.sangre label {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.botones-sangre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.botones-sangre button {
+  background: white;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+
+  padding: 6px 10px;
+
+  font-size: 11px;
+  color: #555;
+
+  cursor: pointer;
+}
+
+.botones-sangre button:hover {
+  border-color: #16a6c9;
+}
+
+.botones-sangre button.seleccionado {
+  background: #16a6c9;
+  border-color: #16a6c9;
+  color: white;
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 35px;
+}
+
+.botones ion-button {
+  --border-radius: 5px;
+  text-transform: none;
+}
+
+@media (max-width: 700px) {
+
+  .contenedor {
+    padding: 15px;
+  }
+
+  .fila {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .botones {
+    flex-direction: column;
+  }
+
+  .botones ion-button {
+    width: 100%;
+  }
+}

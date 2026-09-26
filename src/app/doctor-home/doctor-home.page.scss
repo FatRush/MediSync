@@ -1,0 +1,224 @@
+/* ==========================================================
+   1. ESTILOS BASE Y MODO CLARO (LIGHT MODE)
+   ========================================================== */
+ion-content {
+  --background: #f4f5f8;
+}
+
+ion-toolbar {
+  --background: #0066ff;
+  --color: #ffffff;
+  --min-height: 48px;
+}
+
+ion-card {
+  background: #ffffff;
+  --background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  color: #1f2937;
+}
+
+/* Tarjeta del Doctor (Modo Claro) */
+.tarjeta-doctor {
+  --background: #ffffff !important;
+  --color: #1f2937 !important;
+  background: #ffffff !important;
+
+  ion-item {
+    --background: transparent !important;
+    --color: #1f2937 !important;
+  }
+
+  ion-label,
+  ion-label.label-doctor {
+    --color: #111827 !important;
+    color: #111827 !important;
+  }
+
+  /* Nombre del doctor */
+  h2,
+  .texto-doctor, 
+  h2.texto-doctor {
+    color: #111827 !important;
+    font-weight: bold !important;
+  }
+
+  /* Textos secundarios e iconos */
+  p,
+  .texto-especialidad,
+  .texto-descripcion,
+  .texto-correo {
+    color: #4b5563 !important;
+  }
+
+  ion-icon {
+    color: #4b5563 !important;
+  }
+}
+
+.tarjeta-contador {
+  margin: 0;
+  box-shadow: none;
+  border: 1px solid #e5e7eb;
+}
+
+.texto-correo {
+  color: #374151;
+}
+
+.texto-sub {
+  color: #6b7280;
+}
+
+/* Segmentos - MODO CLARO */
+ion-segment {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+ion-segment-button {
+  --color: #6b7280 !important;              /* Texto no seleccionado (Gris visible) */
+  --color-checked: #0066ff !important;      /* Texto seleccionado (Azul) */
+  --indicator-color: #0066ff !important;    /* Línea inferior (Azul) */
+  color: #6b7280 !important;
+}
+
+ion-segment-button.segment-button-checked {
+  color: #0066ff !important;
+}
+
+
+/* ==========================================================
+   2. MODO OSCURO DEFINITIVO (.dark)
+   ========================================================== */
+body.dark, html.dark, .dark {
+  --ion-background-color: #121212 !important;
+  --ion-background-color-rgb: 18,18,18 !important;
+  --ion-card-background: #1e1e1e !important;
+  --ion-item-background: #1e1e1e !important;
+  --ion-toolbar-background: #18181b !important;
+  --ion-toolbar-color: #ffffff !important;
+  --ion-color-dark: #ffffff !important;
+
+  /* Fondo global */
+  ion-content,
+  ion-content.ion-color-light {
+    --background: #121212 !important;
+    background: #121212 !important;
+    color: #f3f4f6 !important;
+  }
+
+  /* Header Superior */
+  ion-toolbar,
+  ion-toolbar.ion-color-primary {
+    --background: #18181b !important;
+    --color: #ffffff !important;
+    color: #ffffff !important;
+  }
+
+  /* Tarjetas y Contenedores */
+  ion-card, 
+  ion-item,
+  .tarjeta-contador {
+    background: #1e1e1e !important;
+    --background: #1e1e1e !important;
+    color: #ffffff !important;
+    border-color: #2d2d2d !important;
+  }
+
+  /* Tarjeta del Doctor (Modo Oscuro) */
+  .tarjeta-doctor {
+    --background: #1e1e1e !important;
+    --color: #ffffff !important;
+    background: #1e1e1e !important;
+
+    ion-item {
+      --background: transparent !important;
+      --color: #ffffff !important;
+    }
+
+    ion-label,
+    ion-label.label-doctor {
+      --color: #ffffff !important;
+      color: #ffffff !important;
+    }
+
+    h2,
+    .texto-doctor, 
+    h2.texto-doctor {
+      color: #ffffff !important;
+    }
+
+    p,
+    .texto-especialidad,
+    .texto-descripcion,
+    .texto-correo {
+      color: #d1d5db !important;
+    }
+
+    ion-icon {
+      color: #9ca3af !important;
+    }
+  }
+
+  /* Textos Generales */
+  h1, h2, h3, h4, p, span, strong, b,
+  ion-card-title, ion-card-subtitle, ion-label,
+  .texto-correo {
+    color: #f3f4f6 !important;
+  }
+
+  .texto-sub,
+  ion-card p,
+  div.ion-text-center p {
+    color: #9ca3af !important;
+  }
+
+  div.ion-text-center ion-icon {
+    color: #6b7280 !important;
+  }
+
+  /* Segmentos - MODO OSCURO (Anidado dentro de body.dark) */
+  ion-segment {
+    background: #1e1e1e !important;
+    border-bottom: 1px solid #2d2d2d;
+  }
+
+  ion-segment-button {
+    --color: #9ca3af !important;              /* Texto no seleccionado (Gris claro) */
+    --color-checked: #3b82f6 !important;      /* Texto seleccionado (Azul claro) */
+    --indicator-color: #3b82f6 !important;    /* Línea inferior */
+    color: #9ca3af !important;
+  }
+
+  ion-segment-button.segment-button-checked {
+    color: #3b82f6 !important;
+  }
+
+  /* Buscador e Inputs */
+  ion-searchbar, 
+  ion-select, 
+  ion-input {
+    --background: #2a2a2a !important;
+    --color: #ffffff !important;
+    --placeholder-color: #9ca3af !important;
+    --icon-color: #9ca3af !important;
+    background: #2a2a2a !important;
+    color: #ffffff !important;
+  }
+}
+ion-searchbar {
+  --background: #ffffff !important;
+  --color: #1f2937 !important;
+  --placeholder-color: #6b7280 !important;
+  --icon-color: #6b7280 !important;
+  --clear-button-color: #6b7280 !important;
+  background: transparent !important;
+  color: #1f2937 !important;
+  border-radius: 10px;
+}
+.nombre-paciente {
+  color: #1a1a1a; /* O var(--ion-color-dark) */
+}

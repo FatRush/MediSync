@@ -1,0 +1,101 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Especialidades</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- FORMULARIO DE CREAR / EDITAR -->
+  <ion-card class="ion-margin-bottom">
+    <ion-card-header>
+      <ion-card-title>{{ editando ? 'Editar Especialidad' : 'Nueva Especialidad' }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-input 
+          label="Nombre" 
+          labelPlacement="stacked" 
+          placeholder="Ej. Cardiología" 
+          [(ngModel)]="nombre">
+        </ion-input>
+      </ion-item>
+
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-textarea 
+          label="Descripción (Opcional)" 
+          labelPlacement="stacked" 
+          placeholder="Descripción de la especialidad" 
+          [(ngModel)]="descripcion">
+        </ion-textarea>
+      </ion-item>
+
+      <div class="ion-text-end">
+        <ion-button *ngIf="editando" color="medium" fill="clear" (click)="limpiarFormulario()">
+          Cancelar
+        </ion-button>
+        <ion-button color="primary" (click)="guardarEspecialidad()">
+          {{ editando ? 'Actualizar' : 'Guardar' }}
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- BUSCADOR -->
+  <ion-searchbar 
+    placeholder="Buscar especialidad" 
+    [(ngModel)]="busqueda" 
+    animated="true">
+  </ion-searchbar>
+
+  <h2 class="ion-margin-start ion-margin-top">Especialidades registradas</h2>
+  <p class="ion-margin-start text-muted">{{ especialidadesFiltradas.length }} especialidad(es)</p>
+
+  <!-- MENSAJE SI NO HAY DATOS -->
+  <div *ngIf="especialidadesFiltradas.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="medical-outline" size="large" color="medium"></ion-icon>
+    <h3>No hay especialidades</h3>
+    <p>Agrega la primera especialidad médica arriba.</p>
+  </div>
+
+  <!-- LISTA DE ESPECIALIDADES -->
+  <ion-list *ngIf="especialidadesFiltradas.length > 0">
+    <ion-card *ngFor="let esp of especialidadesFiltradas">
+      <ion-card-header>
+        <ion-card-title>{{ esp.nombre }}</ion-card-title>
+        <ion-card-subtitle>
+          <ion-badge [color]="esp.activo ? 'success' : 'danger'">
+            {{ esp.activo ? 'Activa' : 'Inactiva' }}
+          </ion-badge>
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p>{{ esp.descripcion || 'Sin descripción' }}</p>
+
+        <div class="ion-text-end ion-margin-top">
+          <!-- Botón Activar / Inactivar -->
+          <ion-button size="small" [color]="esp.activo ? 'warning' : 'success'" (click)="cambiarEstado(esp)">
+            {{ esp.activo ? 'Inactivar' : 'Activar' }}
+          </ion-button>
+
+          <!-- Botón Editar -->
+          <ion-button size="small" color="primary" fill="outline" (click)="editarEspecialidad(esp)">
+            Editar
+          </ion-button>
+
+          <!-- Botón Eliminar -->
+          <ion-button size="small" color="danger" fill="clear" (click)="eliminarEspecialidad(esp)">
+            Eliminar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+</ion-content>

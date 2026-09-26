@@ -1,0 +1,222 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="irHome()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Bienvenido a MediSync!
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+  <div class="contenedor">
+    <h2>INGRESA TU INFORMACIÓN</h2>
+    <form [formGroup]="pacienteForm" (ngSubmit)="guardar()">
+
+          <!-- CONOCIDO COMO -->
+      <div class="fila">
+        <ion-item lines="none">
+          <ion-label position="stacked">
+            Nombres:
+          </ion-label>
+          <ion-input
+            formControlName="conocidoComo">
+          </ion-input>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">
+           Apellidos:
+          </ion-label>
+          <ion-input
+            formControlName="lugarNacimiento">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <!-- IDENTIFICACIÓN -->
+<ion-item lines="none">
+  <ion-select
+    label="Tipo de identificación"
+    label-placement="stacked"
+    justify="space-between"
+    formControlName="tipoIdentificacion">
+    <ion-select-option value="Identidad">DNI</ion-select-option>
+    <ion-select-option value="Pasaporte">Pasaporte</ion-select-option>
+    <ion-select-option value="Carnet">Carnet</ion-select-option>
+    <ion-select-option value="Licencia">Licencia</ion-select-option>
+    <ion-select-option value="Partida de Nacimiento">Partida de Nacimiento</ion-select-option>
+  </ion-select>
+</ion-item>
+
+  <ion-item lines="none">
+    <ion-label position="stacked">
+      Número de Identificación
+    </ion-label>
+    <ion-input
+      type="text"
+      formControlName="numeroIdentificacion">
+    </ion-input>
+  </ion-item> 
+
+      <!-- FECHA DE NACIMIENTO -->
+      <ion-item lines="none">
+        <ion-label position="stacked">
+          Fecha de nacimiento
+        </ion-label>
+        <ion-input
+          type="date"
+          formControlName="fechaNacimiento">
+        </ion-input>
+      </ion-item>
+
+      <!-- GRUPO ETNICO / ESTADO CIVIL -->  
+      <div class="fila">
+        <ion-item lines="none">
+  <ion-select
+    label="Género"
+    label-placement="stacked"
+    justify="space-between"
+    formControlName="grupoEtnico">
+    <ion-select-option value="Masculino">Masculino</ion-select-option>
+    <ion-select-option value="Femenino">Femenino</ion-select-option>
+    <ion-select-option value="Otro">Otro</ion-select-option>
+  </ion-select>
+</ion-item>
+
+  <ion-item lines="none">
+  <ion-select
+    label="Estado civil"
+    label-placement="stacked"
+    justify="space-between"
+    formControlName="estadoCivil">
+    <ion-select-option value="Soltero">Soltero</ion-select-option>
+    <ion-select-option value="Casado">Casado</ion-select-option>
+    <ion-select-option value="Divorciado">Divorciado</ion-select-option>
+    <ion-select-option value="Viudo">Viudo</ion-select-option>
+  </ion-select>
+</ion-item>
+      </div>
+
+      <!-- OCUPACIÓN -->
+      <ion-item lines="none">
+        <ion-label position="stacked">
+          Ocupación
+        </ion-label>
+        <ion-input
+          formControlName="ocupacion">
+        </ion-input>
+      </ion-item>
+
+
+      <!-- TIPO DE SANGRE -->
+      <div class="sangre">
+        <label>
+          Tipo de sangre
+        </label>
+        <div class="botones-sangre">
+          <button
+            type="button"
+            *ngFor="
+              let tipo of [
+                'O+',
+                'O-',
+                'A+',
+                'A-',
+                'B+',
+                'B-',
+                'AB+',
+                'AB-',
+                'Desconocido'
+              ]"
+            [class.seleccionado]=" pacienteForm.get('tipoSangre')?.value === tipo "(click)=" pacienteForm.patchValue({
+                tipoSangre: tipo})">{{ tipo }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Departamento -->
+      <ion-item lines="none">
+  <ion-select
+    label="Departamento"
+    label-placement="stacked"
+    justify="space-between"
+    formControlName="provincia">
+    <ion-select-option value="Atlantida">Atlántida</ion-select-option>
+    <ion-select-option value="Choluteca">Choluteca</ion-select-option>
+    <ion-select-option value="Colón">Colón</ion-select-option>
+    <ion-select-option value="Comayagua">Comayagua</ion-select-option>
+    <ion-select-option value="Copán">Copán</ion-select-option>
+    <ion-select-option value="Cortés">Cortés</ion-select-option>
+    <ion-select-option value="El Paraíso">El Paraíso</ion-select-option>
+    <ion-select-option value="Francisco Morazán">Francisco Morazán</ion-select-option>
+    <ion-select-option value="Gracias a Dios">Gracias a Dios</ion-select-option>
+    <ion-select-option value="Intibucá">Intibucá</ion-select-option>
+    <ion-select-option value="Islas de la Bahía">Islas de la Bahía</ion-select-option>
+    <ion-select-option value="La Paz">La Paz</ion-select-option>
+    <ion-select-option value="Lempira">Lempira</ion-select-option>
+    <ion-select-option value="Ocotepeque">Ocotepeque</ion-select-option>
+    <ion-select-option value="Olancho">Olancho</ion-select-option>
+    <ion-select-option value="Santa Bárbara">Santa Bárbara</ion-select-option>
+    <ion-select-option value="Valle">Valle</ion-select-option>
+    <ion-select-option value="Yoro">Yoro</ion-select-option>
+  </ion-select>
+</ion-item>
+
+      <!-- DIRECCIÓN -->
+      <ion-item lines="none">
+        <ion-label position="stacked">
+          Dirección exacta
+        </ion-label>
+        <ion-input
+          formControlName="direccion">
+        </ion-input>
+      </ion-item>
+
+      <!-- DATOS DE CONTACTO -->
+      <h3>
+        Datos de contacto
+      </h3>
+      <div class="fila">
+        <ion-item lines="none">
+          <ion-label position="stacked">
+            Teléfono
+          </ion-label>
+          <ion-input
+            type="tel"
+            formControlName="telefono">
+          </ion-input>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">
+            Numero de Telefono en Caso de Emergencia
+          </ion-label>
+          <ion-input
+            type="numero"
+            formControlName="correo">
+          </ion-input>
+        </ion-item>
+      </div>
+      <!-- BOTONES -->
+      <div class="botones">
+        <ion-button
+          type="button" fill="outline" (click)="irHome()">
+          Cancelar
+        </ion-button>
+        <ion-button
+          type="submit"
+          [disabled]="guardando">
+          <ion-spinner
+            *ngIf="guardando"
+            name="crescent">
+          </ion-spinner>
+          <span *ngIf="!guardando">
+            Guardar información
+          </span>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>

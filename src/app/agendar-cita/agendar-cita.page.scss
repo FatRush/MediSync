@@ -1,0 +1,78 @@
+/* Fondo claro por defecto */
+ion-content {
+  --background: #ffffff !important;
+}
+
+/* Toolbar */
+ion-toolbar {
+  --background: #ffffff !important;
+  --color: #333 !important;
+  --min-height: 48px;
+}
+
+/* Título / Saludo */
+.saludo h1,
+.saludo p {
+  color: #000000 !important; /* negro fijo */
+  text-align: center;
+}
+
+.saludo h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.saludo p {
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Botones */
+ion-button {
+  --background: #007bff !important; /* azul */
+  --color: #ffffff !important;      /* texto blanco */
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* Inputs y selectores */
+ion-item {
+  --background: #f9f9f9 !important;
+  --color: #000000 !important;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+ion-input,
+ion-select,
+ion-datetime {
+  --color: #000000 !important;
+}
+
+/* Lista de horarios */
+.horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.horarios ion-button {
+  --background: #f1f5f9 !important; /* gris claro */
+  --color: #000000 !important;      /* texto negro */
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Motivo de consulta */
+.motivo {
+  margin-top: 20px;
+}
+
+.motivo ion-textarea {
+  --background: #f9f9f9 !important;
+  --color: #000000 !important;
+  border-radius: 8px;
+}

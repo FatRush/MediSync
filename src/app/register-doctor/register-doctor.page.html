@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Completar Registro</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding ion-text-center">
+  <div class="form-container">
+    <img src="assets/icon/MediSync.png" alt="MediSync Logo" style="width: 150px; margin-bottom: 20px;">
+    <h2>¡Bienvenido a MediSync!</h2>
+    <p>Completa tus datos para activar tu cuenta como especialista.</p>
+
+    <ion-card>
+      <ion-card-content>
+        <!-- Correo (Solo lectura) - Usando correoInput -->
+        <ion-item fill="solid" class="ion-margin-bottom">
+          <ion-input 
+            label="Correo Electrónico" 
+            labelPlacement="stacked" 
+            [value]="correoInput" 
+            readonly="true">
+          </ion-input>
+        </ion-item>
+
+        <!-- Clave Inicial (OTP del correo) - Usando claveInicialInput -->
+        <ion-item fill="solid" class="ion-margin-bottom">
+          <ion-input 
+            type="text"
+            label="Clave Inicial (Enviada a tu correo)" 
+            labelPlacement="stacked" 
+            placeholder="Ej. A4B9X2"
+            [(ngModel)]="claveInicialInput">
+          </ion-input>
+        </ion-item>
+
+        <!-- Teléfono - Usando telefonoInput -->
+        <ion-item fill="solid" class="ion-margin-bottom">
+          <ion-input 
+            type="tel"
+            label="Número de Teléfono" 
+            labelPlacement="stacked" 
+            placeholder="Ej. +504 9999-9999"
+            [(ngModel)]="telefonoInput">
+          </ion-input>
+        </ion-item>
+
+        <!-- Nueva Contraseña - Usando passwordNuevaInput -->
+        <ion-item fill="solid" class="ion-margin-bottom">
+          <ion-input 
+            type="password"
+            label="Crea tu nueva contraseña" 
+            labelPlacement="stacked" 
+            placeholder="Mínimo 6 caracteres"
+            [(ngModel)]="passwordNuevaInput">
+          </ion-input>
+        </ion-item>
+
+        <!-- Llamando a onActivarCuenta() que es como se llama en el TS -->
+        <ion-button expand="block" (click)="onActivarCuenta()">
+          Activar mi Cuenta
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

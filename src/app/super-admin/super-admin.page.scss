@@ -1,0 +1,314 @@
+.admin-content {
+  --background: #f5f7fb;
+  padding-bottom: 30px;
+}
+
+
+/* HEADER */
+
+ion-toolbar {
+  --background: #ffffff;
+  --color: #1f2937;
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 700;
+}
+
+
+/* BIENVENIDA */
+
+.welcome-section {
+  background: #ffffff;
+  padding: 30px 25px;
+  border-radius: 0 0 25px 25px;
+  margin-bottom: 20px;
+}
+
+.small-title {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: 1px;
+}
+
+.welcome-section h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.welcome-section h2 {
+  margin: 5px 0;
+  font-size: 21px;
+  color: #2563eb;
+}
+
+.description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 650px;
+}
+
+
+/* ESTADÍSTICAS */
+
+.statistics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  padding: 0 20px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.stat-card p {
+  margin: 3px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon ion-icon {
+  font-size: 24px;
+}
+
+.doctor {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.patient {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.clinic {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.specialty {
+  background: #fce7f3;
+  color: #db2777;
+}
+
+.appointment {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+
+/* TÍTULO */
+
+.section-title {
+  padding: 30px 20px 15px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.section-title p {
+  margin-top: 5px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+
+/* GRID */
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  padding: 0 20px;
+}
+
+.admin-card {
+  margin: 0;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --background: #ffffff;
+  cursor: pointer;
+}
+
+.admin-card ion-card-content {
+  position: relative;
+  padding: 25px;
+  min-height: 170px;
+}
+
+.menu-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.menu-icon ion-icon {
+  font-size: 27px;
+}
+
+.doctor-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.specialty-icon {
+  background: #fce7f3;
+  color: #db2777;
+}
+
+.clinic-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.schedule-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.appointment-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.admin-card h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-card p {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 7px;
+  padding-right: 25px;
+}
+
+.arrow {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 22px;
+  color: #9ca3af;
+}
+
+
+/* ESTADO DEL SISTEMA */
+
+.system-section {
+  padding: 30px 20px;
+}
+
+.system-section h2 {
+  font-size: 20px;
+  color: #111827;
+}
+
+.system-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px #dcfce7;
+}
+
+.status-indicator strong {
+  color: #166534;
+}
+
+.status-indicator p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+
+  .statistics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .statistics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-section {
+    padding: 25px 20px;
+  }
+
+  .welcome-section h1 {
+    font-size: 24px;
+  }
+
+}

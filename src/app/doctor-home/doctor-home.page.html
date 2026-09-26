@@ -1,0 +1,882 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Panel del Doctor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleDarkMode()" title="Cambiar Tema">
+        <ion-icon [name]="esModoOscuro ? 'sunny-outline' : 'moon-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+      <!-- BOTÓN PARA ABRIR CONFIGURACIÓN DE HORARIOS -->
+      <ion-button (click)="abrirModalHorarios()" title="Configuración de Horarios">
+        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      
+      <!-- BOTÓN CERRAR SESIÓN -->
+      <ion-button (click)="cerrarSesion()" title="Cerrar Sesión">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <!-- TARJETA DEL PERFIL DEL DOCTOR -->
+<ion-card class="ion-margin-bottom tarjeta-doctor">
+  <ion-item lines="none" class="ion-margin-top" style="--background: transparent;">
+    <ion-avatar slot="start">
+      <img src="assets/icon/medico.png" alt="Doctor" />
+    </ion-avatar>
+    <ion-label class="label-doctor">
+      <h2 class="texto-doctor">Dr(a). {{ nombreDoctor }}</h2>
+      <p class="texto-especialidad">
+        <ion-icon name="medkit-outline"></ion-icon> {{ especialidad || 'Especialista' }}
+      </p>
+    </ion-label>
+  </ion-item>
+  
+  <ion-card-content>
+    <p class="texto-descripcion">{{ descripcion }}</p>
+    <p class="ion-margin-top texto-correo">
+      <ion-icon name="mail-outline"></ion-icon> <strong>Correo:</strong> {{ correoActual }}
+    </p>
+  </ion-card-content>
+</ion-card>
+
+  <!-- CONTADORES RÁPIDOS -->
+  <ion-grid class="ion-margin-bottom">
+    <ion-row>
+      <ion-col size="4">
+        <ion-card class="ion-text-center ion-padding" style="margin: 0; box-shadow: none;">
+          <ion-text color="warning">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">{{ citasPendientes.length }}</h1>
+          </ion-text>
+          <p style="margin: 5px 0 0 0; font-size: 10px; color: gray; font-weight: bold;">PENDIENTES</p>
+        </ion-card>
+      </ion-col>
+      
+      <ion-col size="4">
+        <ion-card class="ion-text-center ion-padding" style="margin: 0; box-shadow: none;">
+          <ion-text color="primary">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">{{ citasConfirmadas.length }}</h1>
+          </ion-text>
+          <p style="margin: 5px 0 0 0; font-size: 10px; color: gray; font-weight: bold;">CONFIRMADAS</p>
+        </ion-card>
+      </ion-col>
+      
+      <ion-col size="4">
+        <ion-card class="ion-text-center ion-padding" style="margin: 0; box-shadow: none;">
+          <ion-text color="success">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">{{ citasAtendidas.length }}</h1>
+          </ion-text>
+          <p style="margin: 5px 0 0 0; font-size: 10px; color: gray; font-weight: bold;">ATENDIDAS</p>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- SEGMENTADOR (TABS) -->
+  <ion-segment [(ngModel)]="segmentoActual" class="ion-margin-bottom">
+    <ion-segment-button value="pendiente">
+      <ion-label>PENDIENTES</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="confirmada">
+      <ion-label>CONFIRMADAS</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="atendida">
+      <ion-label>ATENDIDAS</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="cancelada">
+      <ion-label>CANCELADAS</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- CONTENIDO DE LOS SEGMENTOS -->
+  @switch (segmentoActual) {
+    
+    <!-- === CITAS PENDIENTES === -->
+    @case ('pendiente') {
+      @if (citasPendientes.length === 0) {
+        <div class="ion-text-center ion-margin-top">
+          <ion-icon name="calendar-outline" style="font-size: 48px; color: var(--ion-color-medium);"></ion-icon>
+          <p style="color: var(--ion-color-medium);">No tienes citas pendientes registradas.</p>
+        </div>
+      }
+
+      @for (cita of citasPendientes; track cita.id || $index) {
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-title><strong style="color: var(--ion-color-dark);">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-subtitle class="ion-margin-top">
+              <ion-icon name="calendar-outline"></ion-icon> {{ cita.fecha }} 
+              <ion-icon name="time-outline" class="ion-margin-start"></ion-icon> {{ cita.hora }}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>Motivo:</strong> {{ cita.motivo || 'No especificado' }}</p>
+            @if (cita.telefono || cita.pacienteTelefono) {
+              <p><strong>Teléfono:</strong> {{ cita.telefono || cita.pacienteTelefono }}</p>
+            }
+
+            <!-- INFORMACIÓN DEL ESTADO DE PAGO -->
+            <div class="info-pago-doctor ion-margin-top">
+              <p style="margin-bottom: 8px;"><b>Estado del Pago:</b></p>
+              
+              @if (cita.estadoPago === 'pagado' || (cita.metodoPago | lowercase)?.includes('tarjeta')) {
+                <ion-chip color="success">
+                  <ion-icon name="card-outline"></ion-icon>
+                  <ion-label>Pagado con Tarjeta</ion-label>
+                </ion-chip>
+              } @else if (cita.estadoPago === 'paypal' || (cita.metodoPago | lowercase)?.includes('paypal')) {
+                <ion-chip color="primary">
+                  <ion-icon name="logo-paypal"></ion-icon>
+                  <ion-label>Pagado con PayPal</ion-label>
+                </ion-chip>
+              } @else if (cita.estadoPago === 'pendiente_en_clinica' || (cita.metodoPago | lowercase)?.includes('efectivo')) {
+                <ion-chip color="warning">
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <ion-label>Cobrar {{ cita.precio || '' }} en clínica (Efectivo)</ion-label>
+                </ion-chip>
+              } @else {
+                <ion-chip color="medium">
+                  <ion-label>Pago no especificado</ion-label>
+                </ion-chip>
+              }
+            </div>
+
+            <ion-button color="success" expand="block" class="ion-margin-top" (click)="confirmarYNotificarPorWhatsApp(cita)">
+              <ion-icon name="logo-whatsapp" slot="start"></ion-icon>
+              CONFIRMAR Y NOTIFICAR WHATSAPP
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+
+    <!-- === CITAS CONFIRMADAS === -->
+    @case ('confirmada') {
+      @if (citasConfirmadas.length === 0) {
+        <div class="ion-text-center ion-margin-top">
+          <ion-icon name="checkmark-done-circle-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
+          <p style="color: var(--ion-color-medium);">No tienes citas confirmadas por el momento.</p>
+        </div>
+      }
+
+      @for (cita of citasConfirmadas; track cita.id || $index) {
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-subtitle class="ion-margin-top">
+              <ion-icon name="calendar-outline"></ion-icon> {{ cita.fecha }} 
+              <ion-icon name="time-outline" class="ion-margin-start"></ion-icon> {{ cita.hora }}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>Motivo:</strong> {{ cita.motivo || 'No especificado' }}</p>
+            
+            <!-- INFORMACIÓN DEL ESTADO DE PAGO -->
+            <div class="info-pago-doctor ion-margin-top">
+              <p style="margin-bottom: 8px;"><b>Estado del Pago:</b></p>
+              
+              @if (cita.estadoPago === 'pagado' || (cita.metodoPago | lowercase)?.includes('tarjeta')) {
+                <ion-chip color="success">
+                  <ion-icon name="card-outline"></ion-icon>
+                  <ion-label>Pagado con Tarjeta</ion-label>
+                </ion-chip>
+              } @else if (cita.estadoPago === 'paypal' || (cita.metodoPago | lowercase)?.includes('paypal')) {
+                <ion-chip color="primary">
+                  <ion-icon name="logo-paypal"></ion-icon>
+                  <ion-label>Pagado con PayPal</ion-label>
+                </ion-chip>
+              } @else if (cita.estadoPago === 'pendiente_en_clinica' || (cita.metodoPago | lowercase)?.includes('efectivo')) {
+                <ion-chip color="warning">
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <ion-label>Cobrar {{ cita.precio || '' }} en clínica (Efectivo)</ion-label>
+                </ion-chip>
+              } @else {
+                <ion-chip color="medium">
+                  <ion-label>Pago no especificado</ion-label>
+                </ion-chip>
+              }
+            </div>
+
+            <!-- SECCIÓN DE ARCHIVOS MULTIPLES EN CITA CONFIRMADA -->
+            <div class="ion-margin-top" style="border-top: 1px solid #eee; padding-top: 12px;">
+              <p style="margin-bottom: 6px;"><strong>Adjuntar Exámenes / Documentos:</strong></p>
+              <input #fileInputConfirmada type="file" multiple style="display: none;" (change)="subirExamenParaCita($event, cita)" accept="image/*, application/pdf" />
+              <ion-button fill="outline" size="small" (click)="fileInputConfirmada.click()">
+                <ion-icon name="attach-outline" slot="start"></ion-icon>
+                Seleccionar Archivos
+              </ion-button>
+
+              @if (cita.archivosExamenes?.length > 0) {
+                <div class="ion-margin-top">
+                  @for (doc of cita.archivosExamenes; track doc.url || $index) {
+                    <ion-chip color="tertiary" (click)="abrirArchivo(doc.url)">
+                      <ion-icon name="document-text-outline"></ion-icon>
+                      <ion-label>{{ doc.nombre }}</ion-label>
+                    </ion-chip>
+                  }
+                </div>
+              } @else if (cita.archivoExamenURL) {
+                <div class="ion-margin-top">
+                  <ion-chip color="tertiary" (click)="abrirArchivo(cita.archivoExamenURL)">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <ion-label>Ver Examen Adjunto</ion-label>
+                  </ion-chip>
+                </div>
+              }
+            </div>
+
+            <ion-button expand="block" color="primary" class="ion-margin-top" (click)="marcarComoAtendida(cita)">
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              Atender / Generar Documento
+            </ion-button>
+
+            <ion-button expand="block" color="secondary" fill="outline" class="ion-margin-top" (click)="abrirExpedienteYAtender(cita)">
+              <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+              Finalizar Consulta (Expediente)
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+
+    <!-- === CITAS ATENDIDAS (HISTORIAL) === -->
+    @case ('atendida') {
+      <ion-searchbar [(ngModel)]="filtroPaciente" placeholder="Buscar paciente o diagnóstico..." animated="true"></ion-searchbar>
+      
+      @if (citasAtendidasFiltradas.length === 0) {
+        <div class="ion-text-center ion-margin-top">
+          <p>No hay registro de citas atendidas.</p>
+        </div>
+      }
+
+      @for (cita of citasAtendidasFiltradas; track cita.id || $index) {
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-subtitle>📅 {{ cita.fecha }} - Documento: {{ cita.tipoDoc || 'N/A' }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>Diagnóstico:</strong> {{ cita.diagnostico || 'No registrado' }}</p>
+            
+            <ion-button expand="block" fill="clear" (click)="abrirExpedienteYAtender(cita)">
+              Ver Expediente Completo
+            </ion-button>
+            
+            <div class="ion-margin-top" style="border-top: 1px solid #eee; padding-top: 15px;">
+              <p style="margin-bottom: 8px;"><strong>Adjuntar Examen (PDF/Imagen):</strong></p>
+              <input #fileInputAtendida type="file" multiple style="display: none;" (change)="subirExamenParaCita($event, cita)" accept="image/*, application/pdf" />
+              <ion-button fill="outline" size="small" (click)="fileInputAtendida.click()">
+                <ion-icon name="attach-outline" slot="start"></ion-icon>
+                Seleccionar Archivos
+              </ion-button>
+
+              @if (cita.archivosExamenes?.length > 0) {
+                <div class="ion-margin-top">
+                  @for (doc of cita.archivosExamenes; track doc.url || $index) {
+                    <ion-chip color="tertiary" (click)="abrirArchivo(doc.url)">
+                      <ion-icon name="document-text-outline"></ion-icon>
+                      <ion-label>{{ doc.nombre }}</ion-label>
+                    </ion-chip>
+                  }
+                </div>
+              } @else if (cita.archivoExamenURL) {
+                <div class="ion-margin-top">
+                  <ion-chip color="tertiary" (click)="abrirArchivo(cita.archivoExamenURL)">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <ion-label>Ver Examen Adjunto</ion-label>
+                  </ion-chip>
+                </div>
+              }
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+
+    <!-- === CITAS CANCELADAS === -->
+    @case ('cancelada') {
+      @if (citasCanceladas.length === 0) {
+        <div class="ion-text-center ion-margin-top">
+          <strong style="color: #1a1a1a;"><p>No hay citas canceladas.</p></strong>
+        </div>
+      }
+
+      @for (cita of citasCanceladas; track cita.id || $index) {
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-subtitle color="danger">
+              <ion-icon name="close-circle-outline"></ion-icon> Cancelada
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p>📅 Fecha original: {{ cita.fecha }} a las {{ cita.hora }}</p>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+  }
+
+  <!-- BÚSQUEDA Y GESTIÓN DE HISTORIAL CLÍNICO GLOBAL -->
+  <ion-card class="ion-margin-top ion-margin-bottom">
+    <ion-card-header>
+      <ion-card-title color="primary">
+        <ion-icon name="journal-outline"></ion-icon> Historial Clínico Global
+      </ion-card-title>
+      <ion-card-subtitle>
+        Busca a cualquier paciente para revisar expediente, tratamientos o reimprimir documentos
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <!-- Contenedor de Buscador y Filtro en Grid -->
+      <ion-grid class="ion-no-padding ion-margin-bottom">
+        <ion-row class="ion-align-items-center">
+          <ion-col size="12" size-md="8">
+            <ion-searchbar 
+              [(ngModel)]="busquedaPacienteBD" 
+              (ionInput)="buscarHistorialEnBaseDeDatos()" 
+              placeholder="Escribe el nombre o identidad..."
+              debounce="400"
+              animated="true">
+            </ion-searchbar>
+          </ion-col>
+
+          <ion-col size="12" size-md="4">
+            <ion-select 
+              interface="popover" 
+              placeholder="Tipo de registro" 
+              [(ngModel)]="filtroTipoRegistro" 
+              (ionChange)="buscarHistorialEnBaseDeDatos()">
+              <ion-select-option value="todos">Todos los registros</ion-select-option>
+              <ion-select-option value="receta">Recetas Médicas</ion-select-option>
+              <ion-select-option value="incapacidad">Incapacidades / Constancias</ion-select-option>
+              <ion-select-option value="examen">Exámenes / Adjuntos</ion-select-option>
+            </ion-select>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <!-- Spinner de Carga -->
+      @if (cargandoHistorialBD) {
+        <div class="ion-text-center ion-padding">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p style="color: var(--ion-color-medium);">Buscando expedientes...</p>
+        </div>
+      }
+
+      <!-- Lista de Resultados de Expedientes -->
+      @if (!cargandoHistorialBD && historialResultadosBD.length > 0) {
+        <ion-list>
+          @for (cita of historialResultadosBD; track cita.id || $index) {
+            <ion-item-group>
+              <ion-item class="ion-margin-bottom" style="border: 1px solid #e0e0e0; border-radius: 10px; --background: #ffffff;">
+                
+                <ion-avatar slot="start" class="ion-hide-sm-down">
+                  <ion-icon name="person-circle-outline" style="font-size: 40px; color: var(--ion-color-primary);"></ion-icon>
+                </ion-avatar>
+
+                <ion-label class="ion-text-wrap">
+                  <h2 style="font-size: 16px; font-weight: bold; color: var(--ion-color-dark);">
+                    {{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}
+                  </h2>
+                  
+                  <p style="font-size: 13px; margin-top: 4px;">
+                    <ion-icon name="calendar-outline"></ion-icon> <b>Fecha:</b> {{ cita.fecha }} 
+                    <ion-icon name="time-outline" class="ion-margin-start"></ion-icon> <b>Hora:</b> {{ cita.hora }}
+                  </p>
+
+                  @if (cita.diagnostico) {
+                    <p style="font-size: 13px; margin-top: 2px;">
+                      🩺 <b>Diagnóstico:</b> {{ cita.diagnostico }}
+                    </p>
+                  }
+
+                  @if (cita.receta) {
+                    <p style="font-size: 13px; margin-top: 2px;">
+                      💊 <b>Tratamiento:</b> {{ cita.receta }}
+                    </p>
+                  }
+
+                  <div class="ion-margin-top">
+                    @if (cita.tipoDoc === 'receta') { <ion-badge color="tertiary">Receta</ion-badge> }
+                    @if (cita.tipoDoc === 'incapacidad') { <ion-badge color="warning">Constancia</ion-badge> }
+                    @if (cita.archivoExamenURL || cita.archivosExamenes?.length) { <ion-badge color="success">Examen Adjunto</ion-badge> }
+                  </div>
+                </ion-label>
+
+                <!-- Botones de Acción (Versión Desktop) -->
+                <ion-buttons slot="end" class="ion-hide-sm-down">
+                  <ion-button color="secondary" fill="solid" size="small" (click)="abrirExpedienteYAtender(cita)">
+                    <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                    Expediente
+                  </ion-button>
+
+                  <ion-button color="primary" fill="outline" size="small" (click)="reimprimirDocumento(cita)">
+                    <ion-icon name="print-outline" slot="start"></ion-icon>
+                    Imprimir
+                  </ion-button>
+                </ion-buttons>
+
+              </ion-item>
+
+              <!-- Acciones Móviles -->
+              <div class="ion-hide-md-up ion-padding-bottom ion-text-center" style="margin-top: -10px;">
+                <ion-button color="secondary" fill="solid" size="small" (click)="abrirExpedienteYAtender(cita)">
+                  <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                  Expediente
+                </ion-button>
+                <ion-button color="primary" fill="outline" size="small" (click)="reimprimirDocumento(cita)">
+                  <ion-icon name="print-outline" slot="start"></ion-icon>
+                  Imprimir
+                </ion-button>
+              </div>
+            </ion-item-group>
+          }
+        </ion-list>
+      }
+
+      <!-- Estado Vacío -->
+      @if (!cargandoHistorialBD && busquedaPacienteBD && busquedaPacienteBD.length >= 2 && historialResultadosBD.length === 0) {
+        <div class="ion-text-center ion-padding">
+          <ion-icon name="search-outline" style="font-size: 48px; color: var(--ion-color-medium);"></ion-icon>
+          <p style="color: var(--ion-color-medium);">
+            No se encontraron expedientes o consultas con "{{ busquedaPacienteBD }}".
+          </p>
+        </div>
+      }
+
+    </ion-card-content>
+  </ion-card>
+
+  <!-- MODAL DE VISTA PREVIA DE RECETA -->
+  <ion-modal [isOpen]="isModalVistaPreviaOpen" (didDismiss)="isModalVistaPreviaOpen = false">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Vista Previa del Documento</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isModalVistaPreviaOpen = false">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content class="ion-padding">
+        <div class="vista-previa-card" style="background: var(--ion-card-background, #fff); padding: 20px; border-radius: 8px; border: 1px solid #ccc;">
+          <h2 style="text-align: center; margin-bottom: 5px;">Dr(a). {{ nombreDoctor }}</h2>
+          <p style="text-align: center; margin-top: 0; color: gray;">{{ especialidad }}</p>
+          <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+          
+          <h3 style="text-align: center; color: #007bff;">{{ atencion.tipoDoc === 'receta' ? 'RECETA MÉDICA' : 'CONSTANCIA DE INCAPACIDAD' }}</h3>
+          
+          <p><b>Paciente:</b> {{ citaSeleccionada?.pacienteNombre }} {{ citaSeleccionada?.pacienteApellido }}</p>
+          <p><b>Fecha:</b> {{ obtenFechaActual() }}</p>
+          
+          <div *ngIf="atencion.presionArterial || atencion.pesoKg">
+            <p><b>Signos Vitales:</b> 
+              PA: {{ atencion.presionArterial || 'N/A' }} | 
+              FC: {{ atencion.frecuenciaCardiaca || 'N/A' }} bpm | 
+              IMC: {{ atencion.imc || 'N/A' }}
+            </p>
+          </div>
+
+          <p style="margin-top: 20px;"><b>Indicaciones / Prescripción:</b></p>
+          <div style="background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; white-space: pre-line;">
+            {{ atencion.indicaciones || 'Sin indicaciones escritas.' }}
+          </div>
+
+          <div style="margin-top: 40px; text-align: center;">
+            <p>__________________________________</p>
+            <p>Firma y Sello del Doctor</p>
+          </div>
+        </div>
+
+        <ion-button expand="block" color="primary" class="ion-margin-top" (click)="confirmarDesdeVistaPrevia()">
+          Aprobar y Descargar Word
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE CONFIGURACIÓN DE HORARIOS Y PIN   -->
+  <!-- ========================================== -->
+  <ion-modal [isOpen]="isModalHorariosOpen" (didDismiss)="cerrarModalHorarios()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>⚙️ Horarios y Seguridad</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModalHorarios()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding" color="light">
+        
+        <!-- SECCIÓN 1: PIN DE SEGURIDAD / AUTORIZACIÓN -->
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-subtitle color="primary"><strong>PIN DE SEGURIDAD</strong></ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="full">
+              <ion-icon name="key-outline" slot="start" color="primary"></ion-icon>
+              <ion-input 
+                type="password" 
+                label="PIN de Autorización (4 dígitos)" 
+                labelPlacement="floating" 
+                [(ngModel)]="pinDoctor" 
+                maxlength="4"
+                placeholder="Ej: 1234">
+              </ion-input>
+            </ion-item>
+            <p style="font-size: 12px; color: gray; margin-top: 8px;">
+              Este PIN es la clave que autorizará a la secretaría a editar o generar recetas con tu firma/permiso.
+            </p>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- SECCIÓN 2: HORARIOS DE ATENCIÓN -->
+        <ion-card class="ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-subtitle color="primary"><strong>HORARIOS Y DÍAS LABORALES</strong></ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-input type="time" label="Hora de Apertura" labelPlacement="floating" [(ngModel)]="horaInicio"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input type="time" label="Hora de Cierre" labelPlacement="floating" [(ngModel)]="horaFin"></ion-input>
+            </ion-item>
+
+            <p class="ion-margin-top"><strong>Días Laborales:</strong></p>
+            
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['lunes']">Lunes</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['martes']">Martes</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['miercoles']">Miércoles</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['jueves']">Jueves</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['viernes']">Viernes</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['sabado']">Sábado</ion-checkbox></ion-item>
+            <ion-item lines="none"><ion-checkbox [(ngModel)]="diasLaborales['domingo']">Domingo</ion-checkbox></ion-item>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- BOTÓN DE GUARDADO GLOBAL -->
+        <ion-button expand="block" color="dark" class="ion-margin-top" (click)="guardarDisponibilidadYBuscar()">
+          GUARDAR CONFIGURACIÓN Y PIN
+        </ion-button>
+
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+<!-- ========================================== -->
+<!-- MODAL DE ATENCIÓN (RECETA O INCAPACIDAD)   -->
+<!-- ========================================== -->
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="cerrarModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Emitir Documento Médico</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="cerrarModal()">Cancelar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding" color="light">
+      @if (citaSeleccionada) {
+        <div>
+          <p><strong>Paciente:</strong> {{ citaSeleccionada.pacienteNombre || citaSeleccionada.nombre }} {{ citaSeleccionada.pacienteApellido }}</p>
+
+          <ion-item class="ion-margin-bottom">
+            <ion-select label="Tipo de Documento" labelPlacement="stacked" [(ngModel)]="atencion.tipoDoc" placeholder="Seleccione">
+              <ion-select-option value="receta">Receta Médica</ion-select-option>
+              <ion-select-option value="incapacidad">Constancia de Incapacidad</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- SECCIÓN DE SIGNOS VITALES / PESO, ESTATURA E IMC -->
+          <ion-card class="ion-no-margin ion-margin-bottom ion-padding">
+            <ion-card-header class="ion-no-padding ion-margin-bottom">
+              <ion-card-subtitle color="primary"><strong>SIGNOS VITALES / ANTROPOMETRÍA</strong></ion-card-subtitle>
+            </ion-card-header>
+
+            <ion-grid class="ion-no-padding">
+              <ion-row>
+                <ion-col size="4">
+                  
+                    <ion-label position="stacked" class="custom-label">Peso (Lbs)</ion-label>
+                    <ion-input 
+                      type="number" 
+                      [(ngModel)]="atencion.pesoLbs" 
+                      (ionInput)="calcularIMC()" 
+                      placeholder="Ej: 150">
+                    </ion-input>
+              
+                </ion-col>
+
+                <ion-col size="4">
+                  
+                    <ion-label position="stacked">Estatura (M)</ion-label>
+                    <ion-input 
+                      type="number" 
+                      step="0.01"
+                      [(ngModel)]="atencion.estaturaM" 
+                      (ionInput)="calcularIMC()" 
+                      placeholder="Ej: 1.70">
+                    </ion-input>
+                  
+                </ion-col>
+
+                <ion-col size="4">
+                 
+                    <ion-label position="stacked">IMC</ion-label>
+                    <ion-input 
+                      [value]="atencion.imc ? atencion.imc + ' (' + (atencion.clasificacionImc || '') + ')' : ''" 
+                      readonly 
+                      placeholder="Auto">
+                    </ion-input>
+                  
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card>
+
+          <!-- SELECTOR DE PLANTILLAS GUARDADAS -->
+          @if (listaPlantillas && listaPlantillas.length > 0) {
+            <ion-item class="ion-margin-top">
+              <ion-select 
+                label="Usar plantilla guardada" 
+                labelPlacement="stacked" 
+                placeholder="Selecciona una plantilla"
+                (ionChange)="cargarPlantillaSeleccionada($event)">
+                @for (plantilla of listaPlantillas; track plantilla.id || $index) {
+                  <ion-select-option [value]="plantilla">
+                    {{ plantilla.nombre }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
+
+          <ion-item class="ion-margin-top">
+            <ion-textarea 
+              label="Indicaciones / Tratamiento / Diagnóstico" 
+              labelPlacement="stacked"
+              [(ngModel)]="atencion.indicaciones" 
+              rows="5"
+              placeholder="Escriba la prescripción o indicaciones médicas...">
+            </ion-textarea>
+          </ion-item>
+
+          <!-- GUARDAR PLANTILLA PERSONALIZADA -->
+          <ion-item lines="none" class="ion-margin-top" style="background: rgba(var(--ion-color-primary-rgb), 0.05); border-radius: 8px;">
+            <ion-input 
+              label="Guardar esta indicación como nueva plantilla" 
+              labelPlacement="stacked" 
+              [(ngModel)]="nombreNuevaPlantilla" 
+              placeholder="Ej: Control de Hipertensión">
+            </ion-input>
+            <ion-button size="small" fill="solid" color="secondary" slot="end" (click)="guardarPlantillaPersonalizada()">
+              Guardar Plantilla
+            </ion-button>
+          </ion-item>
+
+          <ion-item lines="none" class="ion-margin-top">
+            <ion-checkbox [(ngModel)]="atencion.requiereProximaCita">¿Programar próxima cita de seguimiento?</ion-checkbox>
+          </ion-item>
+
+          @if (atencion.requiereProximaCita) {
+            <ion-item>
+              <ion-input 
+                type="datetime-local" 
+                label="Fecha y Hora de Cita" 
+                labelPlacement="stacked"
+                [(ngModel)]="atencion.fechaProximaCita">
+              </ion-input>
+            </ion-item>
+          }
+        </div>
+      }
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button color="medium" (click)="cerrarModal()">Cancelar</ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button color="secondary" fill="solid" (click)="abrirVistaPrevia()">
+            Vista Previa
+          </ion-button>
+          <ion-button color="primary" fill="solid" (click)="guardarYGenerarWord()">
+            Guardar y Descargar Word
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE EXPEDIENTE MÉDICO (ÚNICO E INTEGRADO) -->
+  <!-- ========================================== -->
+  <ion-modal [isOpen]="isModalExpedienteOpen" (didDismiss)="cerrarModalExpediente()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>
+            {{ citaExpedienteSeleccionada?.estado === 'atendida' ? 'Expediente Médico (Solo Lectura)' : 'Atender Cita / Editar Expediente' }}
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModalExpediente()">CERRAR</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding" color="light">
+        @if (citaExpedienteSeleccionada) {
+          <div>
+            <!-- Tarjeta Informativa del Paciente -->
+            <ion-card class="ion-no-margin ion-margin-bottom">
+              <ion-card-header>
+                <ion-card-title>
+                  Paciente: {{ citaExpedienteSeleccionada.pacienteNombre || citaExpedienteSeleccionada.nombre }} {{ citaExpedienteSeleccionada.pacienteApellido }}
+                </ion-card-title>
+                <ion-card-subtitle>
+                  Fecha: {{ citaExpedienteSeleccionada.fecha }} - {{ citaExpedienteSeleccionada.hora }}
+                </ion-card-subtitle>
+              </ion-card-header>
+            </ion-card>
+
+            <!-- SECCIÓN DE ARCHIVOS / EXÁMENES ADJUNTOS EN MODAL -->
+            <ion-card class="ion-no-margin ion-margin-bottom" color="light" style="border: 1px solid #e0e0e0;">
+              <ion-card-content>
+                <p><strong>Documentos / Exámenes Adjuntos:</strong></p>
+
+                <!-- Lista de Múltiples Archivos -->
+                @if (citaExpedienteSeleccionada.archivosExamenes?.length > 0) {
+                  <div class="ion-margin-top">
+                    <ion-list lines="none" style="background: transparent;">
+                      @for (doc of citaExpedienteSeleccionada.archivosExamenes; track doc.url || $index) {
+                        <ion-item button (click)="abrirArchivo(doc.url)" class="ion-no-padding">
+                          <ion-icon name="document-text-outline" slot="start" color="tertiary"></ion-icon>
+                          <ion-label class="ion-text-wrap">
+                            <h2>{{ doc.nombre }}</h2>
+                            <p style="font-size: 0.8em; color: gray;">Clic para abrir/descargar</p>
+                          </ion-label>
+                        </ion-item>
+                      }
+                    </ion-list>
+                  </div>
+                } @else if (citaExpedienteSeleccionada.archivoExamenURL) {
+                  <!-- Fallback si solo existe un archivo subido previamente -->
+                  <div class="ion-margin-top">
+                    <ion-button expand="block" fill="outline" color="tertiary" (click)="abrirArchivo(citaExpedienteSeleccionada.archivoExamenURL)">
+                      <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                      Ver Examen Adjunto
+                    </ion-button>
+                  </div>
+                } @else {
+                  <p class="ion-color-medium ion-margin-top" style="font-size: 0.9em;">No hay ningún examen adjuntado aún.</p>
+                }
+
+                <!-- Opción para Adjuntar Múltiples Archivos desde el Modal (si no está atendida) -->
+                @if (citaExpedienteSeleccionada.estado !== 'atendida') {
+                  <div class="ion-margin-top">
+                    <input 
+                      type="file" 
+                      #fileInputModal 
+                      multiple 
+                      (change)="subirExamenParaCita($event, citaExpedienteSeleccionada)" 
+                      style="display: none;" 
+                      accept="image/*, application/pdf">
+                      
+                    <ion-button size="small" fill="solid" color="medium" (click)="fileInputModal.click()">
+                      <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+                      + Adjuntar Archivos
+                    </ion-button>
+                  </div>
+                }
+              </ion-card-content>
+            </ion-card>
+
+            <!-- MODO 1: EDICIÓN (Cita Pendiente / Confirmada) -->
+            @if (citaExpedienteSeleccionada.estado !== 'atendida') {
+              <ion-card class="ion-no-margin ion-padding">
+                <ion-item class="ion-margin-bottom">
+                  <ion-textarea 
+                    label="🤒 Síntomas del Paciente" 
+                    labelPlacement="stacked" 
+                    [(ngModel)]="expedienteForm.sintomas" 
+                    rows="3"
+                    placeholder="Escribe los síntomas...">
+                  </ion-textarea>
+                </ion-item>
+
+                <ion-item class="ion-margin-bottom">
+                  <ion-textarea 
+                    label="🩺 Diagnóstico Médico" 
+                    labelPlacement="stacked" 
+                    [(ngModel)]="expedienteForm.diagnostico" 
+                    rows="3"
+                    placeholder="Escribe el diagnóstico...">
+                  </ion-textarea>
+                </ion-item>
+
+                <ion-item class="ion-margin-bottom">
+                  <ion-textarea 
+                    label="🔬 Exámenes / Resultados" 
+                    labelPlacement="stacked" 
+                    [(ngModel)]="expedienteForm.examenes" 
+                    rows="3"
+                    placeholder="Escribe los exámenes indicados...">
+                  </ion-textarea>
+                </ion-item>
+
+                <ion-item class="ion-margin-bottom">
+                  <ion-textarea 
+                    label="💊 Receta / Tratamiento" 
+                    labelPlacement="stacked" 
+                    [(ngModel)]="expedienteForm.receta" 
+                    rows="4"
+                    placeholder="Escribe la receta o tratamiento...">
+                  </ion-textarea>
+                </ion-item>
+
+                <ion-button expand="block" color="success" class="ion-margin-top" (click)="guardarExpedienteYFinalizar()">
+                  <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+                  Guardar Expediente y Finalizar Cita
+                </ion-button>
+              </ion-card>
+            }
+
+            <!-- MODO 2: SOLO LECTURA (Cita Atendida) -->
+            @if (citaExpedienteSeleccionada.estado === 'atendida') {
+              <ion-card class="ion-no-margin">
+                <ion-card-content>
+                  <p><strong>Síntomas:</strong></p>
+                  <p class="ion-margin-bottom" style="color: var(--ion-color-dark);">{{ citaExpedienteSeleccionada.sintomas || 'No registrado' }}</p>
+
+                  <p><strong>Diagnóstico:</strong></p>
+                  <p class="ion-margin-bottom" style="color: var(--ion-color-dark);">{{ citaExpedienteSeleccionada.diagnostico || 'No registrado' }}</p>
+
+                  <p><strong>Exámenes:</strong></p>
+                  <p class="ion-margin-bottom" style="color: var(--ion-color-dark);">{{ citaExpedienteSeleccionada.examenes || 'No registrados' }}</p>
+
+                  <p><strong>Receta / Indicaciones:</strong></p>
+                  <p class="ion-margin-bottom" style="color: var(--ion-color-dark);">{{ citaExpedienteSeleccionada.receta || 'No registrado' }}</p>
+                </ion-card-content>
+              </ion-card>
+            }
+          </div>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

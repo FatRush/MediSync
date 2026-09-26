@@ -1,0 +1,51 @@
+<ion-content class="ion-padding">
+  <div class="register-card">
+    
+    <!-- Contenedor del Logo -->
+    <div class="logo-container">
+      <img src="assets/icon/MediSync.png" alt="Logo MediSync" />
+    </div>
+
+    <div class="header-section">
+      <h2>Crea tu cuenta en MediSync</h2>
+      <p>Para brindarte una atención más personalizada, comparte tus datos para crear tu cuenta.</p>
+    </div>
+
+    <div class="field-group">
+      <label>Correo electrónico</label>
+      <ion-input
+        class="custom-input"
+        type="email"
+        placeholder="ejemplo@correo.com"
+        [(ngModel)]="email">
+      </ion-input>
+    </div>
+
+    <div class="field-group">
+      <label>Contraseña</label>
+      <ion-input
+        class="custom-input"
+        type="password"
+        placeholder="Crea una contraseña"
+        [(ngModel)]="password">
+      </ion-input>
+    </div>
+
+    <div class="field-group">
+      <label>Confirmar contraseña</label>
+      <ion-input
+        class="custom-input"
+        type="password"
+        placeholder="Confirma tu contraseña"
+        [(ngModel)]="confirmarPassword">
+      </ion-input>
+    </div>
+
+    <a href="#" class="terms-link">Uso y protección de datos</a>
+
+    <ion-button class="btn-register" expand="block" (click)="register()">
+      REGISTRARSE
+    </ion-button>
+
+  </div>
+</ion-content>

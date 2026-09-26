@@ -1,0 +1,53 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Agendar cita</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Agendar cita</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <form [formGroup]="formulario" (ngSubmit)="confirmarCita()">    
+    <!-- Selección de Médico -->
+    <ion-item>
+      <ion-select formControlName="medicoId" label="Médico" labelPlacement="stacked" placeholder="Selecciona un médico">
+        <ion-select-option *ngFor="let medico of medicos" [value]="medico.id">
+          {{ medico.nombre }} - {{ medico.especialidadNombre || medico.especialidadId || 'General' }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <!-- Selección de Fecha (con restricción min para evitar fechas pasadas) -->
+    <ion-item>
+      <ion-input type="date" formControlName="fecha" [min]="fechaMinima" label="Fecha" labelPlacement="stacked"></ion-input>
+    </ion-item>
+    <!-- Selección de Horarios -->
+    <ion-item lines="none">
+      <ion-label position="stacked">Horarios disponibles</ion-label>
+    </ion-item>
+    <div class="ion-padding-horizontal ion-margin-bottom" style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <ion-button 
+        *ngFor="let hora of horas" 
+        [fill]="horaSeleccionada === hora ? 'solid' : 'outline'" 
+        size="small" 
+        type="button"
+        (click)="seleccionarHora(hora)">
+        {{ hora }}
+      </ion-button>
+    </div>
+    <!-- Motivo de Consulta -->
+    <ion-item>
+      <ion-textarea formControlName="motivo" label="Motivo de consulta" labelPlacement="stacked" placeholder="Describe brevemente tus síntomas..."></ion-textarea>
+    </ion-item>
+    <!-- Botón de Envío -->
+    <div class="ion-padding">
+      <ion-button expand="block" type="submit" class="ion-margin-top">
+        Confirmar Cita
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

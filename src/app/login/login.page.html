@@ -1,0 +1,65 @@
+<ion-content class="ion-padding">
+  <div class="login-container">
+    
+    <!-- Sección del Logo -->
+    <div class="logo-wrapper ion-text-center ion-margin-bottom">
+      <img [src]="logoUrl" alt="Logo de la Aplicación" class="app-logo" />
+    </div>
+
+    <h2 class="ion-text-center">Iniciar Sesión</h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <!-- Campo Email -->
+      <ion-item class="ion-margin-bottom">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-input
+          type="email"
+          label="Correo electrónico"
+          labelPlacement="floating"
+          formControlName="email">
+        </ion-input>
+      </ion-item>
+
+      <!-- Campo Contraseña -->
+      <ion-item class="ion-margin-bottom">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-input
+          [type]="mostrarPassword ? 'text' : 'password'"
+          label="Contraseña"
+          labelPlacement="floating"
+          formControlName="password">
+        </ion-input>
+        <ion-button
+          fill="clear"
+          slot="end"
+          (click)="mostrarOcultarPassword()">
+          <ion-icon [name]="mostrarPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMessage" class="error-message ion-text-center">
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Botón Login -->
+      <ion-button
+        expand="block"
+        type="submit"
+        [disabled]="loginForm.invalid || cargando">
+        {{ cargando ? 'Cargando...' : 'Ingresar' }}
+      </ion-button>
+    </form>
+
+    <!-- Links secundarios -->
+    <div class="ion-text-center ion-margin-top">
+      <ion-button fill="clear" (click)="recuperarPassword()">
+        ¿Olvidaste tu contraseña?
+      </ion-button>
+      <br />
+      <ion-button fill="clear" (click)="irARegistro()">
+        ¿No tienes cuenta? Regístrate
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

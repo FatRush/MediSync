@@ -1,0 +1,90 @@
+/* Tarjeta de detalle de cita en blanco */
+.detalle-cita,
+ion-card {
+  background: #ffffff !important; /* fondo blanco fijo */
+  color: #000000 !important;      /* texto negro fijo */
+  border-radius: 12px;
+  box-shadow: none !important;    /* sin sombra */
+  border: 1px solid #e0e0e0;      /* borde gris claro opcional */
+}
+
+/* Contenido interno */
+ion-card-content,
+ion-card-header {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Títulos y textos */
+.detalle-cita h1,
+.detalle-cita h2,
+.detalle-cita p,
+.detalle-cita span,
+.detalle-cita strong {
+  color: #000000 !important;
+}
+
+/* Estado (pendiente) */
+.estado {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+
+/* Botones */
+ion-button {
+  --background: #ffffff !important; /* fondo blanco */
+  --color: #000000 !important;      /* texto negro */
+  border: 1px solid #000000 !important;
+}
+
+/* Botón cancelar en rojo */
+ion-button[color="danger"] {
+  --background: #ff0000 !important;
+  --color: #ffffff !important;
+}
+
+/* Botón volver en azul */
+ion-button[color="primary"] {
+  --background: #007bff !important;
+  --color: #ffffff !important;
+}
+
+/* Forzar tema claro en toda la app */
+:root {
+  color-scheme: light !important;
+}
+
+html, body, ion-app, ion-content {
+  --background: #ffffff !important; /* fondo blanco fijo */
+  background: #ffffff !important;
+  color: #000000 !important;        /* texto negro fijo */
+}
+
+/* Tarjeta de detalle */
+ion-card, .detalle-cita {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #e0e0e0;
+  box-shadow: none !important;
+}
+
+/* Títulos y textos */
+ion-card-title,
+ion-card-subtitle,
+.detalle-cita h1,
+.detalle-cita h2,
+.detalle-cita p,
+.detalle-cita span,
+.detalle-cita strong {
+  color: #000000 !important;
+}
+
+/* Botones */
+ion-button {
+  --background: #ffffff !important;
+  --color: #000000 !important;
+  border: 1px solid #000000 !important;
+}

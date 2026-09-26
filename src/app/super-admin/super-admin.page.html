@@ -1,0 +1,236 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>
+      Panel Administrativo
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        color="light"
+        (click)="cerrarSesion()">
+        <ion-icon
+          slot="icon-only"
+          name="log-out-outline">
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="admin-content">
+  <!-- ENCABEZADO -->
+  <div class="welcome-section">
+    <div>
+      <p class="small-title">
+        PANEL SUPER ADMIN
+      </p>
+
+      <h1>
+        Bienvenido
+      </h1>
+
+      <h2>
+        {{ nombreAdmin }}
+      </h2>
+
+      <p class="description">
+        Administra doctores, especialidades, clínicas,
+        secretarias y citas desde un solo lugar.
+      </p>
+    </div>
+  </div>
+
+
+  <!-- ESTADÍSTICAS -->
+  <div class="statistics">
+
+    <!-- DOCTORES -->
+    <div
+      class="stat-card"
+      (click)="irA('/super-admin-doctores')">
+      <div class="stat-icon doctor">
+        <ion-icon name="medkit-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantDoctores }}</h3>
+        <p>Doctores</p>
+      </div>
+    </div>
+
+    <!-- PACIENTES -->
+    <div 
+      class="stat-card"
+      (click)="irA('/paciente')">
+      <div class="stat-icon patient">
+        <ion-icon name="people-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantPacientes }}</h3>
+        <p>Pacientes</p>
+      </div>
+    </div>
+
+    <!-- CLÍNICAS -->
+    <div
+      class="stat-card"
+      (click)="irA('/agregar-clinica')">
+      <div class="stat-icon clinic">
+        <ion-icon name="business-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantClinicas }}</h3>
+        <p>Clínicas</p>
+      </div>
+    </div>
+
+    <!-- ESPECIALIDADES -->
+    <div
+      class="stat-card"
+      (click)="irA('/super-admin-specialty')">
+      <div class="stat-icon specialty">
+        <ion-icon name="heart-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantEspecialidades }}</h3>
+        <p>Especialidades</p>
+      </div>
+    </div>
+
+    <!-- CITAS -->
+    <div
+      class="stat-card"
+      (click)="irA('/agendar-cita')">
+      <div class="stat-icon appointment">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantCitas }}</h3>
+        <p>Citas</p>
+      </div>
+    </div>
+
+    <div
+      class="stat-card"
+      (click)="irA('/super-admin-secretaria')">
+      <div class="stat-icon appointment">
+        <ion-icon name="headset-outline"></ion-icon>
+      </div>
+      <div>
+        <h3>{{ cantSecretarias }}</h3>
+        <p>Secretarias</p>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- MENÚ ADMINISTRATIVO -->
+  <div class="section-title">
+    <h2>
+      Administración
+    </h2>
+    <p>
+      Selecciona una opción para administrar el sistema
+    </p>
+  </div>
+
+
+  <div class="admin-grid">
+
+    <!-- DOCTORES -->
+    <ion-card
+      class="admin-card"
+      button="true"
+      (click)="irA('/super-admin-doctores')">
+      <ion-card-content>
+        <div class="menu-icon doctor-icon">
+          <ion-icon name="medkit-outline"></ion-icon>
+        </div>
+        <h3>Doctores</h3>
+        <p>Crear, editar y administrar doctores.</p>
+        <ion-icon class="arrow" name="chevron-forward-outline"></ion-icon>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ESPECIALIDADES -->
+    <ion-card
+      class="admin-card"
+      button="true"
+      (click)="irA('/super-admin-specialty')">
+      <ion-card-content>
+        <div class="menu-icon specialty-icon">
+          <ion-icon name="heart-outline"></ion-icon>
+        </div>
+        <h3>Especialidades</h3>
+        <p>Administrar las especialidades médicas.</p>
+        <ion-icon class="arrow" name="chevron-forward-outline"></ion-icon>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- CLÍNICAS -->
+    <ion-card
+      class="admin-card"
+      button="true"
+      (click)="irA('/agregar-clinica')">
+      <ion-card-content>
+        <div class="menu-icon clinic-icon">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <h3>Clínicas</h3>
+        <p>Crear y administrar las clínicas.</p>
+        <ion-icon class="arrow" name="chevron-forward-outline"></ion-icon>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- HORARIOS -->
+    <ion-card
+      class="admin-card"
+      button="true"
+      (click)="irA('/super-admin-secretaria')">
+      <ion-card-content>
+        <div class="menu-icon schedule-icon">
+          <ion-icon name="headset-outline"></ion-icon>
+        </div>
+        <h3>Secretarias</h3>
+        <p>Crear, editar, y administrar secretarias</p>
+        <ion-icon class="arrow" name="chevron-forward-outline"></ion-icon>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- CITAS -->
+    <ion-card
+      class="admin-card"
+      button="true"
+      (click)="irA('/agendar-cita')">
+      <ion-card-content>
+        <div class="menu-icon appointment-icon">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <h3>Citas</h3>
+        <p>Consultar y administrar las citas.</p>
+        <ion-icon class="arrow" name="chevron-forward-outline"></ion-icon>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+
+  <!-- ESTADO DEL SISTEMA -->
+  <div class="system-section">
+    <h2>
+      Estado del sistema
+    </h2>
+    <div class="system-card">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <div>
+          <strong>
+            Sistema activo
+          </strong>
+          <p>
+            Todos los servicios están funcionando correctamente.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

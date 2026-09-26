@@ -1,0 +1,95 @@
+ion-content {
+  --background: #f4f7f9;
+}
+
+.register-card {
+  max-width: 440px;
+  margin: 2rem auto;
+  padding: 2.5rem 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  /* Estilos para el logo centrado y adaptable */
+  .logo-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+
+    img {
+      max-width: 180px;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  .header-section {
+    text-align: left;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a2b4c;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      font-size: 0.92rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+
+  .field-group {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 0.4rem;
+    }
+
+    .custom-input {
+      --background: #f8fafc;
+      --color: #0f172a;
+      --placeholder-color: #94a3b8;
+      --padding-start: 1rem;
+      --padding-end: 1rem;
+      --padding-top: 0.75rem;
+      --padding-bottom: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+
+      &:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        --background: #ffffff;
+      }
+    }
+  }
+
+  .terms-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #2563eb;
+    text-decoration: none;
+    margin-top: 0.25rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .btn-register {
+    --background: #1d4ed8;
+    --background-hover: #1e40af;
+    --color: #ffffff;
+    --border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    height: 48px;
+  }
+}

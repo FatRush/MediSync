@@ -1,0 +1,50 @@
+
+
+<ion-content>
+  <!-- Encabezado -->
+  <div class="ion-padding">
+    <h2>Citas médicas</h2>
+    <p>Administra las citas de tus pacientes</p>
+  </div>
+
+  <!-- Pestañas (Segment) -->
+<!-- Quitamos el [(ngModel)] y dejamos solo el valor y el evento -->
+<ion-segment [value]="segmentoActual" (ionChange)="cambiarSegmento($event)" mode="md">
+  <ion-segment-button value="TODAS">
+    <ion-label>TODAS</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="PENDIENTE">
+    <ion-label>PENDIENTES</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="CONFIRMADA">
+    <ion-label>CONFIRMADAS</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="ATENDIDA">
+    <ion-label>ATENDIDAS</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="CANCELADA">
+    <ion-label>CANCELADAS</ion-label>
+  </ion-segment-button>
+</ion-segment>
+
+  <!-- Lista de citas si existen -->
+  <ion-list *ngIf="citasFiltradas.length > 0; else noCitas">
+    <ion-item *ngFor="let cita of citasFiltradas">
+      <ion-label>
+        <h3>{{ cita.pacienteNombre }}</h3>
+        <p>{{ cita.fecha }} - {{ cita.hora }}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="obtenerColorEstado(cita.estado)">
+        {{ cita.estado }}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <!-- Estado vacío (No hay citas) -->
+  <ng-template #noCitas>
+    <div class="ion-text-center ion-padding" style="margin-top: 40px;">
+      <h3>No hay citas</h3>
+      <p style="color: var(--ion-color-medium);">No existen citas para este filtro.</p>
+    </div>
+  </ng-template>
+</ion-content>

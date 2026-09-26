@@ -1,0 +1,81 @@
+/* 🔒 Forzar tema claro globalmente */
+:root {
+  color-scheme: light !important;
+}
+
+/* 🔧 Desactivar modo oscuro en Ionic */
+html {
+  --ion-background-color: #ffffff !important;
+  --ion-text-color: #000000 !important;
+  --ion-color-step-50: #ffffff !important;
+  --ion-color-step-100: #ffffff !important;
+  --ion-color-step-150: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Fondo blanco fijo para ion-content */
+ion-content {
+  --background: #ffffff !important;
+}
+
+/* Tarjeta de cita */
+ion-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #e0e0e0;
+  box-shadow: none !important;
+}
+
+/* Botones y texto */
+ion-button,
+ion-card-title,
+ion-card-subtitle,
+ion-title {
+  color: #000000 !important;
+}
+
+/* Badge pendiente */
+ion-badge {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+/* Header siempre blanco */
+ion-header {
+  --background: #ffffff !important;
+}
+
+ion-toolbar {
+  --background: #ffffff !important; /* fondo blanco fijo */
+  --color: #000000 !important;      /* texto negro fijo */
+  border-bottom: 1px solid #e0e0e0; /* borde gris claro opcional */
+}
+
+/* Título dentro del toolbar */
+ion-title {
+  color: #000000 !important; /* texto negro */
+  font-weight: 600;
+}
+
+/* Header siempre blanco */
+ion-header {
+  --background: #ffffff !important;
+}
+
+ion-toolbar {
+  --background: #ffffff !important; /* fondo blanco fijo */
+  --color: #000000 !important;      /* texto negro fijo */
+  border-bottom: 1px solid #e0e0e0; /* borde gris claro opcional */
+}
+
+/* Título dentro del toolbar */
+ion-title {
+  color: #000000 !important; /* texto negro */
+  font-weight: 600;
+}
+
+/* Botón de retroceso */
+ion-back-button {
+  --color: #000000 !important; /* ícono flecha en negro */
+}

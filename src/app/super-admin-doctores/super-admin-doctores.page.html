@@ -1,0 +1,130 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Gestión de Doctores</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- FORMULARIO CREAR / EDITAR -->
+  <ion-card class="ion-margin-bottom">
+    <ion-card-header>
+      <ion-card-title>{{ editando ? 'Editar Doctor' : 'Nuevo Doctor' }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      
+      <!-- Nombre -->
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-input 
+          label="Nombre completo" 
+          labelPlacement="stacked" 
+          placeholder="Ej. Dr. Juan Pérez" 
+          [(ngModel)]="nombre">
+        </ion-input>
+      </ion-item>
+
+      <!-- Correo Electrónico (NUEVO) -->
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-input 
+          type="email"
+          label="Correo electrónico" 
+          labelPlacement="stacked" 
+          placeholder="Ej. doctor@medisync.com" 
+          [(ngModel)]="correo">
+        </ion-input>
+      </ion-item>
+
+      <!-- Especialidad (Cargada desde Firebase) -->
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-select 
+          label="Especialidad" 
+          labelPlacement="stacked" 
+          placeholder="Seleccione una especialidad" 
+          [(ngModel)]="especialidadId">
+          <ion-select-option *ngFor="let esp of especialidades" [value]="esp.id">
+            {{ esp.nombre }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Descripción -->
+      <ion-item fill="solid" class="ion-margin-bottom">
+        <ion-textarea 
+          label="Descripción / Biografía" 
+          labelPlacement="stacked" 
+          placeholder="Breve descripción o experiencia profesional" 
+          [(ngModel)]="descripcion">
+        </ion-textarea>
+      </ion-item>
+      
+
+      <!-- Botones de Acción -->
+      <div class="ion-text-end">
+        <ion-button *ngIf="editando" color="medium" fill="clear" (click)="limpiarFormulario()">
+          Cancelar
+        </ion-button>
+        <ion-button color="primary" (click)="guardarMedico()">
+          {{ editando ? 'Actualizar Doctor' : 'Enviar Invitación / Guardar' }}
+        </ion-button>
+      </div>
+
+    </ion-card-content>
+  </ion-card>
+
+  <!-- BUSCADOR -->
+  <ion-searchbar 
+    placeholder="Buscar por nombre o especialidad" 
+    [(ngModel)]="busqueda" 
+    animated="true">
+  </ion-searchbar>
+
+  <h2 class="ion-margin-start ion-margin-top">Doctores registrados</h2>
+  <p class="ion-margin-start text-muted">{{ doctoresFiltrados.length }} doctor(es)</p>
+
+  <!-- MENSAJE VACÍO -->
+  <div *ngIf="doctoresFiltrados.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
+    <h3>No hay doctores registrados</h3>
+    <p>Agrega un nuevo doctor llenando el formulario superior.</p>
+  </div>
+
+  <!-- LISTA DE DOCTORES -->
+  <ion-list *ngIf="doctoresFiltrados.length > 0">
+    <ion-card *ngFor="let docItem of doctoresFiltrados">
+      <ion-card-header>
+        <ion-card-title>{{ docItem.nombre }}</ion-card-title>
+        <ion-card-subtitle>
+          <ion-badge color="tertiary" class="ion-margin-end">{{ docItem.especialidadNombre || 'Sin especialidad' }}</ion-badge>
+          <ion-badge [color]="docItem.activo ? 'success' : 'danger'">
+            {{ docItem.activo ? 'Activo' : 'Inactivo' }}
+          </ion-badge>
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p><strong>Correo:</strong> {{ docItem.correo || 'No especificado' }}</p>
+        <p>{{ docItem.descripcion || 'Sin descripción disponible.' }}</p>
+
+        <div class="ion-text-end ion-margin-top">
+          <ion-button size="small" [color]="docItem.activo ? 'warning' : 'success'" (click)="cambiarEstado(docItem)">
+            {{ docItem.activo ? 'Inactivar' : 'Activar' }}
+          </ion-button>
+
+          <ion-button size="small" color="primary" fill="outline" (click)="editarMedico(docItem)">
+            Editar
+          </ion-button>
+
+          <ion-button size="small" color="danger" fill="clear" (click)="eliminarMedico(docItem)">
+            Eliminar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+</ion-content>
