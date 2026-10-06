@@ -33,11 +33,12 @@ import {
   IonDatetime, 
   IonSearchbar 
 } from '@ionic/angular/standalone';
-import { Firestore, collection, getDocs, onSnapshot, query, doc, updateDoc, addDoc, Timestamp, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, onSnapshot, query, doc, updateDoc, where, addDoc, Timestamp, getDoc } from '@angular/fire/firestore';
 import { Auth, signOut, onAuthStateChanged } from '@angular/fire/auth';
 import { addIcons } from 'ionicons';
 import { logOutOutline, addCircleOutline, printOutline, documentTextOutline, cardOutline, calendarOutline, lockClosedOutline, square, timeOutline, checkmarkCircleOutline, logoWhatsapp } from 'ionicons/icons';
 import { HttpClient } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-secretaria',
@@ -107,7 +108,7 @@ export class SecretariaPage {
   ];
   horasOcupadasDelDia: string[] = [];
 
-  constructor(private toastController: ToastController) {
+  constructor(private toastController: ToastController, private cdRef: ChangeDetectorRef) {
     addIcons({logOutOutline,addCircleOutline,calendarOutline,timeOutline,checkmarkCircleOutline,square,logoWhatsapp,lockClosedOutline,printOutline,cardOutline,documentTextOutline});
   }
 
@@ -154,28 +155,40 @@ export class SecretariaPage {
     }
   }
 
-  async cargarCitasSecretaria() {
-    this.cargando = true;
-    try {
-      const qCitas = query(collection(this.firestore, 'citas'));
-      const citasSnap = await getDocs(qCitas);
-      this.citas = citasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      this.cargarAgendaDelDia(); 
-    } catch (error) {
-      console.error('Error al cargar citas:', error);
-    } finally {
-      this.cargando = false;
-    }
-  }
+ cargarCitasSecretaria() {
+  this.cargando = true;
+  const qCitas = query(collection(this.firestore, 'citas'));
+
+  // 🔄 onSnapshot se queda ESCUCHANDO cambios en tiempo real
+  onSnapshot(qCitas, (snapshot) => {
+    this.citas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    // Refrescamos agenda, filtros y detectamos cambios en pantalla
+    this.cargarAgendaDelDia(); 
+    this.cdRef.detectChanges();
+    this.cargando = false;
+  }, (error) => {
+    console.error('Error escuchando citas en tiempo real:', error);
+    this.cargando = false;
+  });
+}
 
   // Procesa la disponibilidad visual, lista filtrada y métricas según el día seleccionado
-  cargarAgendaDelDia() {
-    if (!this.citas) return;
+ cargarAgendaDelDia() {
+  const fechaBase = this.fechaFiltro ? this.fechaFiltro : new Date().toISOString();
+  const fechaSeleccionada = fechaBase.split('T')[0];
 
-    const fechaBase = this.fechaFiltro ? this.fechaFiltro : new Date().toISOString();
-    const fechaSeleccionada = fechaBase.split('T')[0];
+  const citasRef = collection(this.firestore, 'citas');
 
+  // 🔄 Escuchador en tiempo real de Firestore
+  onSnapshot(citasRef, (snapshot) => {
+    // 1. Actualizamos el listado principal con lo último de la BD
+    this.citas = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // 2. Procesamos las horas ocupadas
     this.horasOcupadasDelDia = [];
 
     this.citas.forEach(cita => {
@@ -190,9 +203,11 @@ export class SecretariaPage {
       }
     });
 
+    // 3. Refrescamos vista y métricas
     this.filtrarCitas();
     this.calcularMetricas();
-  }
+  });
+}
 
   // Filtra las citas mostradas asegurando que correspondan AL DÍA SELECCIONADO y ordenadas por HORA
   // Filtra las citas mostradas y las ordena por FECHA y HORA
@@ -339,6 +354,21 @@ export class SecretariaPage {
     }
   }
 
+  // 🟢 MÉTODO PARA NORMALIZAR EL TELÉFONO
+normalizarTelefono(input: string): string {
+  if (!input) return '';
+  
+  // Remueve letras, espacios, guiones, paréntesis o el signo +
+  let numeroLimpio = input.toString().replace(/\D/g, ''); 
+
+  // Si se ingresaron 8 dígitos (ej: 96606889), agrega automáticamente el prefijo 504 de Honduras
+  if (numeroLimpio.length === 8) {
+    numeroLimpio = `504${numeroLimpio}`;
+  }
+
+  return numeroLimpio; // Devolverá "50496606889"
+}
+
   async abrirModalAgendarExterno() {
     try {
       const qDoctores = query(collection(this.firestore, 'doctors'));
@@ -387,45 +417,47 @@ export class SecretariaPage {
                 return false;
               }
 
-              const horarioOcupado = this.citas.some(cita => {
-                const citaFecha = cita.fecha ? cita.fecha.trim() : '';
-                const citaHora = cita.hora ? cita.hora.trim() : '';
-                
-                return citaFecha === data.fecha && 
-                       citaHora === data.hora && 
-                       cita.estado !== 'cancelada' &&
-                       cita.medicoNombre === medicoNombre;
-              });
+              const telefonoLimpio = this.normalizarTelefono(data.telefono);
 
-              if (horarioOcupado) {
-                this.mostrarAlertaError(`El horario de las ${data.hora} ya está ocupado para este doctor. Por favor seleccione otro.`);
-                return false;
-              }
+      const horarioOcupado = this.citas.some(cita => {
+        const citaFecha = cita.fecha ? cita.fecha.trim() : '';
+        const citaHora = cita.hora ? cita.hora.trim() : '';
+        
+        return citaFecha === data.fecha && 
+               citaHora === data.hora && 
+               cita.estado !== 'cancelada' &&
+               cita.medicoNombre === medicoNombre;
+      });
 
-              try {
-                await addDoc(collection(this.firestore, 'citas'), {
-                  pacienteNombre: data.pacienteNombre,
-                  pacienteId: 'externo_' + Date.now(),
-                  telefono: data.telefono || '',
-                  pacienteTelefono: data.telefono || '',
-                  medicoNombre: medicoNombre,
-                  especialidad: especialidad,
-                  fecha: data.fecha,
-                  hora: data.hora,
-                  motivo: data.motivo || 'Consulta externa',
-                  estado: 'pendiente',
-                  receta: '',
-                  creadoEn: Timestamp.now()
-                });
-                await this.cargarCitasSecretaria();
-                return true;
-              } catch (err) {
-                console.error('Error al registrar cita externa:', err);
-                return false;
-              }
-            }
-          }
-        ]
+      if (horarioOcupado) {
+        this.mostrarAlertaError(`El horario de las ${data.hora} ya está ocupado para este doctor. Por favor seleccione otro.`);
+        return false;
+      }
+
+      try {
+        await addDoc(collection(this.firestore, 'citas'), {
+          pacienteNombre: data.pacienteNombre,
+          pacienteId: 'externo_' + Date.now(),
+          telefono: telefonoLimpio,         // 🟢 Guarda "50496606889"
+          pacienteTelefono: telefonoLimpio, // 🟢 Guarda "50496606889"
+          medicoNombre: medicoNombre,
+          especialidad: especialidad,
+          fecha: data.fecha,
+          hora: data.hora,
+          motivo: data.motivo || 'Consulta externa',
+          estado: 'pendiente',
+          receta: '',
+          creadoEn: Timestamp.now()
+        });
+        await this.cargarCitasSecretaria();
+        return true;
+      } catch (err) {
+        console.error('Error al registrar cita externa:', err);
+        return false;
+      }
+    }
+  }
+]
       });
 
       await alert.present();

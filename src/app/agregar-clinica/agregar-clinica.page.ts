@@ -5,13 +5,17 @@ import { Router } from '@angular/router';
 import { IonicModule, LoadingController, ToastController } from '@ionic/angular';
 import { Firestore, collection, addDoc, getDocs, updateDoc, doc } from '@angular/fire/firestore';
 import { addIcons } from 'ionicons';
+import * as QRCode from 'qrcode';
 import { 
   businessOutline, 
   timeOutline, 
   peopleOutline, 
   imageOutline, 
   qrCodeOutline, 
-  saveOutline 
+  saveOutline,
+  locationOutline,
+  printOutline,
+  downloadOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -22,10 +26,27 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule // 👈 Carga todos los componentes de Ionic a la vez
+    IonicModule
   ]
 })
 export class AgregarClinicaPage implements OnInit {
+
+  selectedFile: File | null = null;
+  logoPreview: string | ArrayBuffer | null = null;
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.logoPreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   private firestore = inject(Firestore);
   private router = inject(Router);
   private loadingCtrl = inject(LoadingController);
@@ -34,10 +55,12 @@ export class AgregarClinicaPage implements OnInit {
   nombre: string = '';
   horarioApertura: string = '08:00';
   horarioCierre: string = '17:00';
+  direccion: string = '';
   logoUrl: string = '';
+  qrGeneradoUrl: string = '';
   doctoresSeleccionados: string[] = [];
   listaDoctores: any[] = [];
-
+ 
   constructor() {
     addIcons({
       businessOutline,
@@ -45,7 +68,10 @@ export class AgregarClinicaPage implements OnInit {
       peopleOutline,
       imageOutline,
       qrCodeOutline,
-      saveOutline
+      saveOutline,
+      locationOutline,
+      printOutline,
+      downloadOutline
     });
   }
 
@@ -71,16 +97,23 @@ export class AgregarClinicaPage implements OnInit {
       return;
     }
 
-    const loading = await this.loadingCtrl.create({ message: 'Guardando clínica...' });
+    const loading = await this.loadingCtrl.create({ message: 'Guardando clínica y generando QR...' });
     await loading.present();
 
     try {
+      let logoFinalUrl = this.logoUrl ? this.logoUrl.trim() : 'https://via.placeholder.com/150?text=Clinica';
+
+      if (this.logoPreview) {
+        logoFinalUrl = this.logoPreview as string;
+      }
+
       const nuevaClinica = {
         nombre: this.nombre.trim(),
+        direccion: this.direccion.trim(),
         horario: `${this.horarioApertura} - ${this.horarioCierre}`,
         horarioApertura: this.horarioApertura,
         horarioCierre: this.horarioCierre,
-        logoUrl: this.logoUrl.trim() || 'https://via.placeholder.com/150?text=Clinica',
+        logoUrl: logoFinalUrl,
         doctoresIds: this.doctoresSeleccionados,
         qrCodeUrl: '',
         estado: 'activa',
@@ -89,22 +122,68 @@ export class AgregarClinicaPage implements OnInit {
 
       const docRef = await addDoc(collection(this.firestore, 'clinicas'), nuevaClinica);
 
-      const urlApp = `https://tu-app-medica.web.app/agendar-cita?clinicaId=${docRef.id}`;
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlApp)}`;
+      const urlApp = `https://8mt8365w-8100.use.devtunnels.ms/registro-paciente?clinicaId=${docRef.id}`;
 
-      await updateDoc(doc(this.firestore, 'clinicas', docRef.id), {
-        qrCodeUrl: qrCodeUrl
+      const qrCodeBase64 = await QRCode.toDataURL(urlApp, {
+        width: 300,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
       });
 
+      await updateDoc(doc(this.firestore, 'clinicas', docRef.id), {
+        qrCodeUrl: qrCodeBase64
+      });
+
+      this.qrGeneradoUrl = qrCodeBase64;
+
       await loading.dismiss();
-      this.mostrarToast('¡Clínica creada con éxito!', 'success');
-      this.router.navigate(['/super-admin']);
+      this.mostrarToast('¡Clínica creada y QR generado con éxito!', 'success');
 
     } catch (error) {
       await loading.dismiss();
       console.error('Error al guardar la clínica:', error);
       this.mostrarToast('Ocurrió un error al guardar la clínica', 'danger');
     }
+  }
+
+  imprimirQr() {
+    const ventanaImpresion = window.open('', '_blank');
+    if (ventanaImpresion) {
+      ventanaImpresion.document.write(`
+        <html>
+          <head>
+            <title>Imprimir QR - ${this.nombre}</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+              .container { display: inline-block; position: relative; }
+              img.qr { width: 250px; height: 250px; }
+              img.logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; border-radius: 50%; background: white; padding: 4px; border: 2px solid #333; }
+              h2 { margin-bottom: 5px; }
+              p { color: #666; }
+            </style>
+          </head>
+          <body>
+            <h2>${this.nombre}</h2>
+            <p>Escanea este código para agendar tu cita</p>
+            <div class="container">
+              <img src="${this.qrGeneradoUrl}" class="qr" />
+              ${this.logoPreview ? `<img src="${this.logoPreview}" class="logo" />` : ''}
+            </div>
+            <script>
+              window.onload = function() { window.print(); window.close(); }
+            </script>
+          </body>
+        </html>
+      `);
+      ventanaImpresion.document.close();
+    }
+  }
+
+  descargarQr() {
+    const link = document.createElement('a');
+    link.href = this.qrGeneradoUrl;
+    link.download = `QR-${this.nombre.replace(/\s+/g, '_')}.png`;
+    link.click();
   }
 
   async mostrarToast(mensaje: string, color: string) {

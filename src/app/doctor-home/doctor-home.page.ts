@@ -79,17 +79,19 @@ export class DoctorHomePage implements OnInit, OnDestroy {
   filtroPaciente: string = '';
   pinDoctor: string = '';
   
-  // Disponibilidad y Días Bloqueados
+  // Disponibilidad y Días Bloqueados (Soporte completo con y sin tildes)
   horaInicio: string = '08:00';
   horaFin: string = '17:00';
   diasLaborales: { [key: string]: boolean } = {
     lunes: true,
     martes: true,
     miercoles: true,
+    miércoles: true,
     jueves: true,
     viernes: true,
-    sabado: false,
-    domingo: false
+    sabado: true,
+    sábado: true,
+    domingo: true
   };
   fechaBloqueadaNueva: string = '';
   diasBloqueados: string[] = [];
@@ -100,11 +102,13 @@ export class DoctorHomePage implements OnInit, OnDestroy {
   historialResultadosBD: any[] = [];
   cargandoHistorialBD: boolean = false;
   esModoOscuro: boolean = false;
+
   // Plantillas de Consulta asociadas al Doctor
   listaPlantillas: any[] = [];
   nombreNuevaPlantilla: string = '';
   plantillaSeleccionada: any = null;
   doctorId: string = '';
+
   // Modales y Estados
   isModalVistaPreviaOpen: boolean = false;
   isModalHorariosOpen: boolean = false;
@@ -122,18 +126,16 @@ export class DoctorHomePage implements OnInit, OnDestroy {
   };
 
   // Datos para Atención Médica Avanzada
- atencion: any = {
-  tipoDoc: 'receta',
-  indicaciones: '',
-  pesoLbs: null,       // Peso en libras
-  estaturaM: null,      // Estatura en metros
-  imc: null,
-  clasificacionImc: '',
-  requiereProximaCita: false,
-  fechaProximaCita: ''
-};
-
-
+  atencion: any = {
+    tipoDoc: 'receta',
+    indicaciones: '',
+    pesoLbs: null,       // Peso en libras
+    estaturaM: null,      // Estatura en metros
+    imc: null,
+    clasificacionImc: '',
+    requiereProximaCita: false,
+    fechaProximaCita: ''
+  };
 
   private citasUnsubscribe: Unsubscribe | null = null;
   private plantillasUnsubscribe: Unsubscribe | null = null;
@@ -168,14 +170,14 @@ export class DoctorHomePage implements OnInit, OnDestroy {
   ngOnInit() {
     this.verificarSesionYcargarDatos();
 
-   const esOscuro = localStorage.getItem('doctor_modo_oscuro') === 'true';
-  this.esModoOscuro = esOscuro;
+    const esOscuro = localStorage.getItem('doctor_modo_oscuro') === 'true';
+    this.esModoOscuro = esOscuro;
 
-  if (esOscuro) {
-    document.documentElement.classList.add('dark');
-    document.body.classList.add('dark');
+    if (esOscuro) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    }
   }
-}
 
   ngOnDestroy() {
     if (this.citasUnsubscribe) {
@@ -247,34 +249,30 @@ export class DoctorHomePage implements OnInit, OnDestroy {
     }
   }
 
-// === CÁLCULO DE IMC (Peso en lb / Estatura en m) ===
-calcularIMC() {
-  const pesoLbs = this.atencion.pesoLbs;
-  const estaturaMetros = this.atencion.estaturaM;
+  // === CÁLCULO DE IMC ===
+  calcularIMC() {
+    const pesoLbs = this.atencion.pesoLbs;
+    const estaturaMetros = this.atencion.estaturaM;
 
-  if (pesoLbs && estaturaMetros && estaturaMetros > 0) {
-    // Convertir Libras a Kilogramos (1 kg ≈ 2.20462 lbs)
-    const pesoKg = pesoLbs / 2.20462;
+    if (pesoLbs && estaturaMetros && estaturaMetros > 0) {
+      const pesoKg = pesoLbs / 2.20462;
+      const imcCalculado = pesoKg / (estaturaMetros * estaturaMetros);
+      this.atencion.imc = parseFloat(imcCalculado.toFixed(2));
 
-    // Calcular IMC: kg / m²
-    const imcCalculado = pesoKg / (estaturaMetros * estaturaMetros);
-    this.atencion.imc = parseFloat(imcCalculado.toFixed(2));
-
-    // Clasificación OMS
-    if (this.atencion.imc < 18.5) {
-      this.atencion.clasificacionImc = 'Bajo peso';
-    } else if (this.atencion.imc < 25) {
-      this.atencion.clasificacionImc = 'Peso normal';
-    } else if (this.atencion.imc < 30) {
-      this.atencion.clasificacionImc = 'Sobrepeso';
+      if (this.atencion.imc < 18.5) {
+        this.atencion.clasificacionImc = 'Bajo peso';
+      } else if (this.atencion.imc < 25) {
+        this.atencion.clasificacionImc = 'Peso normal';
+      } else if (this.atencion.imc < 30) {
+        this.atencion.clasificacionImc = 'Sobrepeso';
+      } else {
+        this.atencion.clasificacionImc = 'Obesidad';
+      }
     } else {
-      this.atencion.clasificacionImc = 'Obesidad';
+      this.atencion.imc = null;
+      this.atencion.clasificacionImc = '';
     }
-  } else {
-    this.atencion.imc = null;
-    this.atencion.clasificacionImc = '';
   }
-}
 
   // === MÉTODOS DEL MODAL DE HORARIOS Y VACACIONES ===
   abrirModalHorarios() {
@@ -370,6 +368,7 @@ calcularIMC() {
         this.doctorId = user.uid;
         this.correoActual = (user.email || '').trim().toLowerCase();
         await this.cargarPerfilDoctorFirestore();
+        await this.cargarDatosDoctor();
         this.escucharCitasDoctorEnTiempoReal();
         this.escucharPlantillasDelDoctor();
       } else {
@@ -392,6 +391,27 @@ calcularIMC() {
           this.especialidad = data.especialidadNombre || data.especialidad || 'Especialidad médica';
           this.descripcion = data.descripcion || 'Panel de control de citas médicas.';
           this.firmaUrl = data.firmaUrl || '';
+          this.horaInicio = data.horaInicio || this.horaInicio;
+          this.horaFin = data.horaFin || this.horaFin;
+          
+          if (data.diasLaborales) {
+            this.diasLaborales = {
+              lunes: data.diasLaborales.lunes ?? true,
+              martes: data.diasLaborales.martes ?? true,
+              miercoles: data.diasLaborales.miercoles ?? data.diasLaborales.miércoles ?? true,
+              miércoles: data.diasLaborales.miércoles ?? data.diasLaborales.miercoles ?? true,
+              jueves: data.diasLaborales.jueves ?? true,
+              viernes: data.diasLaborales.viernes ?? true,
+              sabado: data.diasLaborales.sabado ?? data.diasLaborales.sábado ?? true,
+              sábado: data.diasLaborales.sábado ?? data.diasLaborales.sabado ?? true,
+              domingo: data.diasLaborales.domingo ?? true
+            };
+          }
+
+          if (data.diasBloqueados) {
+            this.diasBloqueados = data.diasBloqueados;
+          }
+
           encontrado = true;
         }
       });
@@ -425,7 +445,7 @@ calcularIMC() {
         });
       });
 
-      this.citas = todasLasCitas.filter(cita => {
+      const citasFiltradas = todasLasCitas.filter(cita => {
         const limpiarTexto = (texto: string) => 
           (texto || '').toLowerCase().replace(/^(dr|dra|doctor|doctora)\.?\s*/i, '').trim();
 
@@ -447,6 +467,13 @@ calcularIMC() {
         return matchNombre || matchCorreo;
       });
 
+      // === ORDENAR POR FECHA Y HORA (ASCENDENTE) ===
+      this.citas = citasFiltradas.sort((a, b) => {
+        const fechaA = new Date(`${a.fecha}T${a.hora || '00:00'}`).getTime();
+        const fechaB = new Date(`${b.fecha}T${b.hora || '00:00'}`).getTime();
+        return fechaA - fechaB; // Muestra primero la fecha/hora más próxima
+      });
+
       const pendientesActuales = this.citasPendientes.length;
       if (this.conteoPrevioPendientes !== -1 && pendientesActuales > this.conteoPrevioPendientes) {
         this.mostrarToast('🔔 ¡Atención! Se ha registrado una nueva cita pendiente.');
@@ -464,6 +491,8 @@ calcularIMC() {
   get citasConfirmadas() { return this.citas.filter(c => (c.estado || '').toLowerCase() === 'confirmada'); }
   get citasAtendidas() { return this.citas.filter(c => (c.estado || '').toLowerCase() === 'atendida'); }
   get citasCanceladas() { return this.citas.filter(c => (c.estado || '').toLowerCase() === 'cancelada'); }
+
+
 
   async confirmarCita(cita: any) {
     try {
@@ -647,97 +676,96 @@ calcularIMC() {
   }
 
   async descargarWordAtencion() {
-  const tituloDoc = this.atencion.tipoDoc === 'receta' ? 'NOTAS Y PLAN TERAPÉUTICO' : 'CONSTANCIA PSICOLÓGICA';
-  const paciente = `${this.citaSeleccionada?.pacienteNombre || ''} ${this.citaSeleccionada?.pacienteApellido || ''}`.trim() || 'Paciente';
-  const fechaAtencion = new Date().toLocaleDateString('es-ES');
+    const tituloDoc = this.atencion.tipoDoc === 'receta' ? 'NOTAS Y PLAN TERAPÉUTICO' : 'CONSTANCIA PSICOLÓGICA';
+    const paciente = `${this.citaSeleccionada?.pacienteNombre || ''} ${this.citaSeleccionada?.pacienteApellido || ''}`.trim() || 'Paciente';
+    const fechaAtencion = new Date().toLocaleDateString('es-ES');
 
-  // Construcción condicional de la línea de Datos Antropométricos
-  const tieneDatosAntropometricos = this.atencion.pesoLbs || this.atencion.estaturaM || this.atencion.imc;
-  const textoAntropometrico = `Peso: ${this.atencion.pesoLbs ? this.atencion.pesoLbs + ' lbs' : 'N/A'} | ` +
-                              `Estatura: ${this.atencion.estaturaM ? this.atencion.estaturaM + ' m' : 'N/A'} | ` +
-                              `IMC: ${this.atencion.imc ? this.atencion.imc + (this.atencion.clasificacionImc ? ' (' + this.atencion.clasificacionImc + ')' : '') : 'N/A'}`;
+    const tieneDatosAntropometricos = this.atencion.pesoLbs || this.atencion.estaturaM || this.atencion.imc;
+    const textoAntropometrico = `Peso: ${this.atencion.pesoLbs ? this.atencion.pesoLbs + ' lbs' : 'N/A'} | ` +
+                                `Estatura: ${this.atencion.estaturaM ? this.atencion.estaturaM + ' m' : 'N/A'} | ` +
+                                `IMC: ${this.atencion.imc ? this.atencion.imc + (this.atencion.clasificacionImc ? ' (' + this.atencion.clasificacionImc + ')' : '') : 'N/A'}`;
 
-  const docu = new Document({
-    sections: [{
-      properties: {},
-      children: [
-        new Paragraph({
-          text: `Dr(a). ${this.nombreDoctor}`,
-          heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({
-          text: `${this.especialidad}`,
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({
-          text: `${this.descripcion}`,
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({
-          text: `Correo: ${this.correoActual}`,
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({ text: '____________________________________________________', alignment: AlignmentType.CENTER }),
-        new Paragraph({ text: '' }),
-        new Paragraph({
-          text: tituloDoc,
-          heading: HeadingLevel.HEADING_2,
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({ text: '' }),
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Paciente: ', bold: true }),
-            new TextRun(paciente),
-          ]
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Fecha de emisión: ', bold: true }),
-            new TextRun(fechaAtencion),
-          ]
-        }),
-        ...(tieneDatosAntropometricos ? [
+    const docu = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            text: `Dr(a). ${this.nombreDoctor}`,
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER
+          }),
+          new Paragraph({
+            text: `${this.especialidad}`,
+            alignment: AlignmentType.CENTER
+          }),
+          new Paragraph({
+            text: `${this.descripcion}`,
+            alignment: AlignmentType.CENTER
+          }),
+          new Paragraph({
+            text: `Correo: ${this.correoActual}`,
+            alignment: AlignmentType.CENTER
+          }),
+          new Paragraph({ text: '____________________________________________________', alignment: AlignmentType.CENTER }),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            text: tituloDoc,
+            heading: HeadingLevel.HEADING_2,
+            alignment: AlignmentType.CENTER
+          }),
+          new Paragraph({ text: '' }),
           new Paragraph({
             children: [
-              new TextRun({ text: 'Datos Antropométricos: ', bold: true }),
-              new TextRun(textoAntropometrico)
+              new TextRun({ text: 'Paciente: ', bold: true }),
+              new TextRun(paciente),
             ]
-          })
-        ] : []),
-        new Paragraph({ text: '' }),
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Notas de Sesión / Plan Terapéutico:', bold: true })
-          ]
-        }),
-        new Paragraph({
-          text: this.atencion.indicaciones || 'Sin notas adicionales.',
-        }),
-        new Paragraph({ text: '' }),
-        ...(this.atencion.requiereProximaCita && this.atencion.fechaProximaCita ? [
+          }),
           new Paragraph({
             children: [
-              new TextRun({ text: 'Próxima Sesión Programada: ', bold: true }),
-              new TextRun(new Date(this.atencion.fechaProximaCita).toLocaleString('es-ES'))
+              new TextRun({ text: 'Fecha de emisión: ', bold: true }),
+              new TextRun(fechaAtencion),
             ]
-          })
-        ] : []),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '__________________________________', alignment: AlignmentType.CENTER }),
-        new Paragraph({ text: 'Firma y Sello del Profesional', alignment: AlignmentType.CENTER })
-      ]
-    }]
-  });
+          }),
+          ...(tieneDatosAntropometricos ? [
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Datos Antropométricos: ', bold: true }),
+                new TextRun(textoAntropometrico)
+              ]
+            })
+          ] : []),
+          new Paragraph({ text: '' }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Notas de Sesión / Plan Terapéutico:', bold: true })
+            ]
+          }),
+          new Paragraph({
+            text: this.atencion.indicaciones || 'Sin notas adicionales.',
+          }),
+          new Paragraph({ text: '' }),
+          ...(this.atencion.requiereProximaCita && this.atencion.fechaProximaCita ? [
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Próxima Sesión Programada: ', bold: true }),
+                new TextRun(new Date(this.atencion.fechaProximaCita).toLocaleString('es-ES'))
+              ]
+            })
+          ] : []),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: '' }),
+          new Paragraph({ text: '__________________________________', alignment: AlignmentType.CENTER }),
+          new Paragraph({ text: 'Firma y Sello del Profesional', alignment: AlignmentType.CENTER })
+        ]
+      }]
+    });
 
-  const blob = await Packer.toBlob(docu);
-  saveAs(blob, `${tituloDoc}_${paciente.replace(/\s+/g, '_')}.docx`);
-}
+    const blob = await Packer.toBlob(docu);
+    saveAs(blob, `${tituloDoc}_${paciente.replace(/\s+/g, '_')}.docx`);
+  }
 
   async subirExamenParaCita(event: any, cita: any) {
     const files: FileList = event.target.files;
@@ -807,11 +835,20 @@ calcularIMC() {
     try {
       if (!this.correoActual) return;
       const dispDocRef = doc(this.firestore, `disponibilidades/${this.correoActual}`);
+
+      // Garantizar duplicidad de tildes/sin tildes antes de enviar
+      const diasFormateados = {
+        ...this.diasLaborales,
+        sabado: !!(this.diasLaborales['sabado'] ?? this.diasLaborales['sábado']),
+        sábado: !!(this.diasLaborales['sábado'] ?? this.diasLaborales['sabado']),
+        miercoles: !!(this.diasLaborales['miercoles'] ?? this.diasLaborales['miércoles']),
+        miércoles: !!(this.diasLaborales['miércoles'] ?? this.diasLaborales['miercoles'])
+      };
       
       await setDoc(dispDocRef, {
         horaInicio: this.horaInicio,
         horaFin: this.horaFin,
-        diasLaborales: this.diasLaborales,
+        diasLaborales: diasFormateados,
         diasBloqueados: this.diasBloqueados
       });
 
@@ -993,10 +1030,25 @@ calcularIMC() {
   }
 
   async guardarDisponibilidadYBuscar() {
+    // Sincronizar estados de tildes y sin tildes antes de guardar en Firestore
+    const sabadoValor = !!(this.diasLaborales['sabado'] ?? this.diasLaborales['sábado']);
+    const domingoValor = !!(this.diasLaborales['domingo']);
+    const miercolesValor = !!(this.diasLaborales['miercoles'] ?? this.diasLaborales['miércoles']);
+
+    const diasNormalizados = {
+      ...this.diasLaborales,
+      sabado: sabadoValor,
+      sábado: sabadoValor,
+      domingo: domingoValor,
+      miercoles: miercolesValor,
+      miércoles: miercolesValor
+    };
+
     const doctorData = {
       horaInicio: this.horaInicio,
       horaFin: this.horaFin,
-      diasLaborales: this.diasLaborales,
+      diasLaborales: diasNormalizados,
+      diasBloqueados: this.diasBloqueados,
       pin: this.pinDoctor
     };
 
@@ -1016,6 +1068,9 @@ calcularIMC() {
         const doctorDocRef = doc(this.firestore, 'doctors', docIdEncontrado);
         await updateDoc(doctorDocRef, doctorData);
         
+        // Sincronizar también con la colección disponibilidades
+        await this.guardarDisponibilidad();
+
         this.mostrarToast('Configuración y PIN guardados correctamente');
         this.cerrarModalHorarios();
       } else {
