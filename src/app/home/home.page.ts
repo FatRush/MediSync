@@ -24,8 +24,7 @@ import {
   IonSearchbar,
   AlertController,
   LoadingController, 
-  IonBadge 
-} from '@ionic/angular/standalone';
+  IonBadge, IonToggle } from '@ionic/angular/standalone';
 import { Auth, signOut } from '@angular/fire/auth';
 import { Firestore, collection, getDocs, query, where, orderBy } from '@angular/fire/firestore';
 import { PacienteService } from '../services/paciente.service';
@@ -39,8 +38,7 @@ import {
   settingsOutline, 
   logOutOutline, 
   documentTextOutline,
-  sparklesOutline, calendarOutline, personOutline, chatbubblesOutline, searchOutline, cardOutline, cashOutline 
-} from 'ionicons/icons';
+  sparklesOutline, calendarOutline, personOutline, chatbubblesOutline, searchOutline, cardOutline, cashOutline, moonOutline } from 'ionicons/icons';
 
 // Declaramos la variable global de PayPal para que TypeScript no marque error
 declare var paypal: any;
@@ -50,7 +48,7 @@ declare var paypal: any;
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [
+  imports: [ 
     IonBadge, 
     CommonModule,
     FormsModule,
@@ -82,6 +80,7 @@ export class HomePage {
   usuarioLogueado = true;
   citaProxima: any = null;
   usuarioId: string = '';
+  darkMode: boolean = false;
 
   // Controla qué cita tiene desplegado el botón de PayPal
   citaSeleccionadaParaPago: string | null = null;
@@ -99,28 +98,37 @@ export class HomePage {
     private loadingController: LoadingController,
     private iaService: IaService,
   ) {
-    addIcons({
-      ellipsisVertical, calendarNumberOutline, timeOutline, personCircleOutline, 
-      logOutOutline, personOutline, searchOutline, sparklesOutline, documentTextOutline, 
-      calendarOutline, cardOutline, cashOutline, chatbubblesOutline, settingsOutline
-    });
+    addIcons({moonOutline,ellipsisVertical,calendarNumberOutline,timeOutline,personCircleOutline,logOutOutline,personOutline,searchOutline,sparklesOutline,documentTextOutline,calendarOutline,cardOutline,cashOutline,chatbubblesOutline,settingsOutline});
   }
 
-  ngOnInit() {
-    const user = this.auth.currentUser;
-    if (user) {
-      this.usuarioId = user.uid;
-      this.cargarCitasEnTiempoReal();
-    } else {
-      console.warn('No hay ningún usuario autenticado.');
-    }
+ngOnInit() {
+  const user = this.auth.currentUser;
+  if (user) {
+    this.usuarioId = user.uid;
+    this.cargarCitasEnTiempoReal();
+  } else {
+    console.warn('No hay ningún usuario autenticado.');
   }
+
+  // Leer la preferencia de forma consistente
+  const savedMode = localStorage.getItem('home_dark_mode') === 'true';
+  this.darkMode = savedMode;
+  
+  // Aplicar el estado inicial al body de manera global
+  document.body.classList.toggle('dark', this.darkMode);
+}
 
   async ionViewWillEnter() {
+    
+    this.cargarDatosHome();
     await runInInjectionContext(this.injector, async () => {
       await this.cargarInformacion();
       this.cargarRedMedicos();
     });
+  }
+
+  cargarDatosHome() {
+    // Llama a tu servicio para obtener la información actualizada
   }
 
   async cargarInformacion() {
@@ -528,4 +536,18 @@ export class HomePage {
       console.error('Error registrando el pago en la base de datos:', error);
     }
   }
+  
+alternarModoOscuro() {
+  this.darkMode = !this.darkMode;
+  
+  // Aplicar o quitar la clase dark en el body principal
+  document.body.classList.toggle('dark', this.darkMode);
+  
+  // Guardar la preferencia
+  localStorage.setItem('darkMode', this.darkMode ? 'true' : 'false');
+  localStorage.setItem('home_dark_mode', this.darkMode ? 'true' : 'false');
+  
+  window.dispatchEvent(new Event('storage'));
+}
+
 }

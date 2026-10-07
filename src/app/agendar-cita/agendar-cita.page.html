@@ -6,25 +6,75 @@
     <ion-title>Agendar cita</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true" class="ion-padding">
+
+<ion-content [fullscreen]="true" class="ion-padding" [class.dark-theme]="darkMode">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Agendar cita</ion-title>
     </ion-toolbar>
   </ion-header>
+
   <form [formGroup]="formulario" (ngSubmit)="confirmarCita()">    
+    
     <!-- Selección de Médico -->
     <ion-item>
-      <ion-select formControlName="medicoId" label="Médico" labelPlacement="stacked" placeholder="Selecciona un médico">
+      <ion-select 
+        formControlName="medicoId" 
+        label="Médico" 
+        labelPlacement="stacked" 
+        placeholder="Selecciona un médico"
+        (ionChange)="onMedicoSeleccionado($event)">
         <ion-select-option *ngFor="let medico of medicos" [value]="medico.id">
           {{ medico.nombre }} - {{ medico.especialidadNombre || medico.especialidadId || 'General' }}
         </ion-select-option>
       </ion-select>
     </ion-item>
+
+    <!-- Tarjeta de la Clínica y Ubicación Asociada al Médico -->
+    <ion-card *ngIf="clinicaAsociada" class="ion-margin-vertical" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <ion-card-header>
+        <ion-card-subtitle>Sede de Atención</ion-card-subtitle>
+        <ion-card-title>{{ clinicaAsociada.nombre }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p style="margin-bottom: 10px;">
+          <ion-icon name="location-outline" color="primary"></ion-icon>
+          <strong>Dirección:</strong> {{ clinicaAsociada.direccion }}
+        </p>
+
+        <!-- Mapa en vivo de la clínica -->
+        <div style="border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+          <iframe
+            width="100%"
+            height="150"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            [src]="getMapUrl(clinicaAsociada.direccion)">
+          </iframe>
+        </div>
+
+        <!-- Botón para abrir el pin exacto (manejado de forma segura con TypeScript) -->
+        <ion-button 
+          *ngIf="clinicaAsociada.enlaceMaps" 
+          fill="outline" 
+          size="small" 
+          expand="block" 
+          type="button"
+          (click)="abrirEnlaceMaps(clinicaAsociada.enlaceMaps)" 
+          class="ion-margin-top">
+          <ion-icon name="map-outline" slot="start"></ion-icon>
+          Abrir Ubicación Exacta en Google Maps
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Selección de Fecha (con restricción min para evitar fechas pasadas) -->
     <ion-item>
       <ion-input type="date" formControlName="fecha" [min]="fechaMinima" label="Fecha" labelPlacement="stacked"></ion-input>
     </ion-item>
+
     <!-- Selección de Horarios -->
     <ion-item lines="none">
       <ion-label position="stacked">Horarios disponibles</ion-label>
@@ -33,21 +83,25 @@
       <ion-button 
         *ngFor="let hora of horas" 
         [fill]="horaSeleccionada === hora ? 'solid' : 'outline'" 
+        [color]="horaSeleccionada === hora ? 'success' : 'primary'" 
         size="small" 
         type="button"
         (click)="seleccionarHora(hora)">
         {{ hora }}
       </ion-button>
     </div>
+
     <!-- Motivo de Consulta -->
     <ion-item>
       <ion-textarea formControlName="motivo" label="Motivo de consulta" labelPlacement="stacked" placeholder="Describe brevemente tus síntomas..."></ion-textarea>
     </ion-item>
+
     <!-- Botón de Envío -->
     <div class="ion-padding">
       <ion-button expand="block" type="submit" class="ion-margin-top">
         Confirmar Cita
       </ion-button>
     </div>
+
   </form>
 </ion-content>

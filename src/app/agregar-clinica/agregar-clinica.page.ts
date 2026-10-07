@@ -6,6 +6,8 @@ import { IonicModule, LoadingController, ToastController } from '@ionic/angular'
 import { Firestore, collection, addDoc, getDocs, updateDoc, doc } from '@angular/fire/firestore';
 import { addIcons } from 'ionicons';
 import * as QRCode from 'qrcode';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ModalController } from '@ionic/angular';
 import { 
   businessOutline, 
   timeOutline, 
@@ -15,7 +17,8 @@ import {
   saveOutline,
   locationOutline,
   printOutline,
-  downloadOutline
+  downloadOutline,
+  linkOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -56,12 +59,14 @@ export class AgregarClinicaPage implements OnInit {
   horarioApertura: string = '08:00';
   horarioCierre: string = '17:00';
   direccion: string = '';
+  enlaceMaps: string = ''; // NUEVO: Para guardar el link o coordenadas exactas del pin
   logoUrl: string = '';
   qrGeneradoUrl: string = '';
   doctoresSeleccionados: string[] = [];
   listaDoctores: any[] = [];
  
-  constructor() {
+  constructor(private sanitizer: DomSanitizer,
+  private modalController: ModalController) {
     addIcons({
       businessOutline,
       timeOutline,
@@ -71,8 +76,21 @@ export class AgregarClinicaPage implements OnInit {
       saveOutline,
       locationOutline,
       printOutline,
-      downloadOutline
+      downloadOutline,
+      linkOutline
     });
+  }
+
+  abrirModalUbicacion() {
+    const direccionBusqueda = this.direccion ? this.direccion : 'Santa Cruz de Yojoa, Cortés';
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionBusqueda)}`;
+    window.open(url, '_blank');
+  }
+
+  getMapUrl(direccion: string): SafeResourceUrl {
+    const query = encodeURIComponent(direccion);
+    const url = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   ngOnInit() {
@@ -110,6 +128,7 @@ export class AgregarClinicaPage implements OnInit {
       const nuevaClinica = {
         nombre: this.nombre.trim(),
         direccion: this.direccion.trim(),
+        enlaceMaps: this.enlaceMaps.trim(), // NUEVO: Se guarda el enlace exacto del pin en Firebase
         horario: `${this.horarioApertura} - ${this.horarioCierre}`,
         horarioApertura: this.horarioApertura,
         horarioCierre: this.horarioCierre,

@@ -24,14 +24,26 @@ export class MyAppointmentsPage implements OnInit {
   private citaService = inject(CitaService);
   private router = inject(Router);
   citas: Cita[] = [];
+  darkMode: boolean = false;
 
 
   async ngOnInit() {
     await this.cargarCitas();
+    this.verificarModoOscuro();
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'home_dark_mode') {
+        this.verificarModoOscuro();
+      }
+    });
   }
 
   async ionViewWillEnter() {
     await this.cargarCitas();
+    this.verificarModoOscuro();
+  }
+
+  verificarModoOscuro() {
+    this.darkMode = localStorage.getItem('home_dark_mode') === 'true';
   }
 
   async cargarCitas() {

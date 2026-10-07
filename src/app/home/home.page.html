@@ -1,12 +1,20 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header [translucent]="true">
+  <ion-toolbar>
     <ion-title>MediSync</ion-title>
-    <!-- MENÚ DESPLEGABLE EN LA ESQUINA SUPERIOR DERECHA -->
-    <ion-buttons slot="end">
+    
+    <!-- Agrupamos ambos botones en el slot="end" para que aparezcan juntos a la derecha -->
+    <ion-buttons slot="end" class="ion-padding-end">
+      <!-- Botón de Modo Oscuro -->
+      <ion-button (click)="alternarModoOscuro()">
+        <ion-icon name="moon-outline" style="font-size: 22px;"></ion-icon>
+      </ion-button>
+
+      <!-- Menú Desplegable -->
       <ion-button id="click-trigger">
-        <ion-icon name="ellipsis-vertical"></ion-icon>
+        <ion-icon name="ellipsis-vertical" style="font-size: 22px;"></ion-icon>
       </ion-button>
     </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
@@ -38,7 +46,7 @@
 </ion-popover>
 
 <!-- Contenido principal de la página -->
-<ion-content class="fondo-home ion-padding">
+<ion-content class="fondo-home ion-padding" [class.dark-theme]="darkMode">
 
   <!-- Saludo Personalizado Corregido -->
   <div class="saludo-container ion-margin-bottom">

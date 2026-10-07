@@ -4,11 +4,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { AlertController } from '@ionic/angular';
-// 👈 Agregamos collection y addDoc aquí
 import { Firestore, doc, getDoc, collection, addDoc } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { StripeService } from '../services/StripeService';
 import { Functions, httpsCallable } from '@angular/fire/functions';
+import { getDocs } from '@angular/fire/firestore';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { 
   IonHeader, 
@@ -64,29 +65,63 @@ export class AgendarCitaPage implements OnInit {
   private pacienteService = inject(PacienteService);
   private alert = inject(AlertController);
   private route = inject(ActivatedRoute);
+  private sanitizer = inject(DomSanitizer);
   medicoSeleccionadoId: string = '';
   medicos: Medico[] = [];
   horas: string[] = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
-  horaSeleccionada = '';
   private stripeSvc = inject(StripeService);
   private functions = inject(Functions);
   cardElement: any;
   fechaCita: string = '';
   cargando: boolean = false;
   precioCita: number = 5000; // $50.00 USD (en centavos)
-  
+  clinicaAsociada: any = null;
+  horaSeleccionada: string = '';
+  darkMode: boolean = false;
   fechaMinima: string = '';
 
   formulario = this.fb.group({
     medicoId: ['', Validators.required],
     fecha: ['', Validators.required],
-    motivo: ['', Validators.required]
+    motivo: ['', Validators.required],
+    hora: ['', Validators.required],
   });
 
-  async ngOnInit() {
+async ngOnInit() {
+    this.verificarModoOscuro();
     this.obtenerFechaActual();
     this.cargarMedicos();
+    
+    // Escucha cambios en tiempo real si el usuario alterna el modo desde el Home
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'home_dark_mode') {
+        this.verificarModoOscuro();
+      }
+    });
   }
+
+  ionViewWillEnter() {
+    this.verificarModoOscuro();
+  }
+
+aplicarModoOscuro() {
+    const isDarkMode = localStorage.getItem('home_dark_mode') === 'true';
+    
+    // Aplica la clase al body globalmente
+    document.body.classList.toggle('dark', isDarkMode);
+    
+    // Aplica la clase al ion-content de esta página
+    const content = document.querySelector('ion-content');
+    if (content) {
+      content.classList.toggle('dark-theme', isDarkMode);
+    }
+  }
+
+   verificarModoOscuro() {
+    const isDarkMode = localStorage.getItem('home_dark_mode') === 'true';
+    this.darkMode = isDarkMode; // Actualiza la variable directamente
+  }
+  
 
   obtenerFechaActual() {
     const hoy = new Date();
@@ -105,6 +140,9 @@ export class AgendarCitaPage implements OnInit {
           if (params['medicoId']) {
             this.medicoSeleccionadoId = params['medicoId'];
             this.formulario.patchValue({ medicoId: this.medicoSeleccionadoId });
+            
+            // <-- Agrega esta línea para que busque la clínica automáticamente al venir de la búsqueda
+            this.obtenerClinicaDelDoctor(this.medicoSeleccionadoId);
           }
         });
       },
@@ -116,8 +154,37 @@ export class AgendarCitaPage implements OnInit {
   }
 
   seleccionarHora(hora: string) {
-    this.horaSeleccionada = hora;
+    this.horaSeleccionada = hora; // Esto actualiza qué botón debe estar en "solid"
+    
+    // Si manejas el valor directamente en el formulario reactivo:
+    this.formulario.patchValue({
+      hora: hora
+    });
   }
+
+  async obtenerClinicaDelDoctor(doctorId: string) {
+  try {
+    const clinicasSnap = await getDocs(collection(this.firestore, 'clinicas'));
+    
+    // Buscamos la clínica cuyo arreglo "doctoresIds" contenga al doctor
+    const clinicaEncontrada = clinicasSnap.docs.find(doc => {
+      const data = doc.data();
+      const doctoresIds = data['doctoresIds'] || [];
+      return doctoresIds.includes(doctorId);
+    });
+
+    if (clinicaEncontrada) {
+      this.clinicaAsociada = {
+        id: clinicaEncontrada.id,
+        ...clinicaEncontrada.data()
+      };
+    } else {
+      this.clinicaAsociada = null;
+    }
+  } catch (error) {
+    console.error('Error al buscar la clínica del doctor:', error);
+  }
+}
 
   async confirmarCita() {
     if (this.formulario.invalid || !this.horaSeleccionada) {
@@ -268,4 +335,50 @@ export class AgendarCitaPage implements OnInit {
       this.cargando = false;
     }
   }
+
+async onMedicoSeleccionado(event: any) {
+    const medicoId = event.detail.value;
+    if (!medicoId) {
+      this.clinicaAsociada = null;
+      return;
+    }
+    // Llama a la función que busca la clínica del doctor seleccionado
+    await this.obtenerClinicaDelDoctor(medicoId);
+  }
+
+getMapUrl(direccion: string): SafeResourceUrl {
+    let url = '';
+
+    // Usamos las coordenadas de la clínica seleccionada si están disponibles en enlaceMaps
+    if (this.clinicaAsociada?.enlaceMaps) {
+      const coords = this.clinicaAsociada.enlaceMaps.trim();
+      // Si el campo tiene el formato de coordenadas, cargamos el mapa centrado exactamente allí con un pin de marcador
+      if (coords.includes(',')) {
+        url = `https://maps.google.com/maps?q=${coords}&z=17&output=embed`;
+      } else {
+        url = `https://maps.google.com/maps?q=${encodeURIComponent(coords)}&output=embed`;
+      }
+    } else {
+      // Respaldo por si no hay coordenadas
+      const query = encodeURIComponent(`${direccion}, Cortés, Honduras`);
+      url = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    }
+
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+ abrirEnlaceMaps(enlace: string) {
+    if (!enlace) return;
+
+    let urlFinal = enlace;
+
+    // Si guardaste solo coordenadas (ej: "15.420857, -88.160126"), creamos el enlace web
+    if (enlace.includes(',') && !enlace.startsWith('http')) {
+      urlFinal = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enlace)}`;
+    }
+
+    // Si ya es un enlace (ya sea corto maps.app.goo.gl o de google.com/maps), se abre tal cual
+    window.open(urlFinal, '_blank');
+  }
+  
 }

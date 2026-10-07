@@ -6,8 +6,10 @@
     <ion-title>Agregar Clínica</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content class="ion-padding">
   <form (ngSubmit)="guardarClinica()">
+    
     <!-- NOMBRE DE LA CLÍNICA -->
     <ion-item class="ion-margin-bottom" lines="full">
       <ion-icon slot="start" name="business-outline" color="primary"></ion-icon>
@@ -20,6 +22,7 @@
         required>
       </ion-input>
     </ion-item>
+
     <!-- HORARIOS DE ATENCIÓN -->
     <ion-item lines="full">
       <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
@@ -30,6 +33,7 @@
         name="horarioApertura">
       </ion-input>
     </ion-item>
+
     <ion-item class="ion-margin-bottom" lines="full">
       <ion-icon slot="start" name="time-outline" color="primary"></ion-icon>
       <ion-label position="stacked">Hora de Cierre</ion-label>
@@ -40,35 +44,65 @@
       </ion-input>
     </ion-item>
 
+ <!-- CAMPO DE DIRECCIÓN -->
+    <ion-item lines="full" class="ion-margin-bottom">
+      <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+      <ion-input 
+        label="Dirección de la Clínica *" 
+        label-placement="stacked" 
+        placeholder="Ej. Barrio El Centro, Cofradía..."
+        [(ngModel)]="direccion"
+        name="direccion">
+      </ion-input>
+    </ion-item>
 
+    <!-- MAPA PREVISUALIZADO Y BOTÓN DE VERIFICACIÓN -->
+    <div *ngIf="direccion" class="ion-margin-vertical" style="position: relative;">
+      <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <iframe
+          width="100%"
+          height="180"
+          style="border:0; pointer-events: none;"
+          loading="lazy"
+          allowfullscreen
+          [src]="getMapUrl(direccion)">
+        </iframe>
+      </div>
+      
+      <!-- Botón para verificar ubicación -->
+      <ion-button size="small" fill="solid" color="secondary" expand="block" (click)="abrirModalUbicacion()" style="margin-top: 8px;">
+        <ion-icon name="map-outline" slot="start"></ion-icon>
+        Verificar y confirmar en Google Maps
+      </ion-button>
+    </div>
 
-<ion-item lines="full">
-  <ion-icon name="business-outline" slot="start" color="primary"></ion-icon>
-  <ion-input 
-    label="Dirección de la Clínica" 
-    label-placement="stacked" 
-    placeholder="Ej. Barrio El Centro, frente al parque..."
-    [(ngModel)]="direccion">
-  </ion-input>
-</ion-item>
-
+    <!-- NUEVO: ENLACE DEL PIN EXACTO -->
+    <ion-item lines="full" class="ion-margin-vertical">
+      <ion-icon name="link-outline" slot="start" color="primary"></ion-icon>
+      <ion-input 
+        label="Enlace del Pin Exacto (Google Maps)" 
+        label-placement="stacked" 
+        placeholder="Pega aquí el enlace del lugar exacto que seleccionaste"
+        [(ngModel)]="enlaceMaps"
+        name="enlaceMaps">
+      </ion-input>
+    </ion-item>
 
     <!-- LOGO DE LA CLÍNICA -->
-  <ion-item lines="full">
-  <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
-  <ion-label position="stacked">Logo / Imagen de la Clínica</ion-label>
-  <ion-input 
-    type="file" 
-    accept="image/*" 
-    (change)="onFileSelected($event)">
-  </ion-input>
-</ion-item>
+    <ion-item lines="full" class="ion-margin-top">
+      <ion-icon slot="start" name="image-outline" color="primary"></ion-icon>
+      <ion-label position="stacked">Logo / Imagen de la Clínica</ion-label>
+      <ion-input 
+        type="file" 
+        accept="image/*" 
+        (change)="onFileSelected($event)">
+      </ion-input>
+    </ion-item>
 
-<!-- Vista previa opcional -->
-<div *ngIf="logoPreview" class="ion-padding" style="text-align: center;">
-  <img [src]="logoPreview" alt="Vista previa" style="max-height: 100px; border-radius: 8px;" />
-</div>
-
+    <!-- Vista previa opcional del logo -->
+    <div *ngIf="logoPreview" class="ion-padding" style="text-align: center;">
+      <img [src]="logoPreview" alt="Vista previa" style="max-height: 100px; border-radius: 8px;" />
+    </div>
 
     <!-- ASIGNACIÓN MÚLTIPLE DE DOCTORES -->
     <ion-item class="ion-margin-bottom" lines="full">
@@ -84,40 +118,36 @@
         </ion-select-option>
       </ion-select>
     </ion-item>
+
     <!-- NOTA SOBRE EL QR -->
     <ion-card *ngIf="qrGeneradoUrl" class="ion-padding ion-text-center">
-  <ion-card-header>
-    <ion-card-title>QR de Acceso a la Sede</ion-card-title>
-    <ion-card-subtitle>{{ nombre }}</ion-card-subtitle>
-  </ion-card-header>
-  
-  <ion-card-content>
-    <!-- Contenedor del QR con el logo superpuesto -->
-    <div id="qr-container" style="position: relative; display: inline-block; margin: 10px auto;">
-      <img [src]="qrGeneradoUrl" alt="Código QR de la Clínica" style="width: 200px; height: 200px;" />
+      <ion-card-header>
+        <ion-card-title>QR de Acceso a la Sede</ion-card-title>
+        <ion-card-subtitle>{{ nombre }}</ion-card-subtitle>
+      </ion-card-header>
       
-      <!-- Logo miniatura incrustado en el centro del QR -->
-      <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; border-radius: 50%; background: white; padding: 3px; border: 2px solid var(--ion-color-primary);" />
-    </div>
+      <ion-card-content>
+        <div id="qr-container" style="position: relative; display: inline-block; margin: 10px auto;">
+          <img [src]="qrGeneradoUrl" alt="Código QR de la Clínica" style="width: 200px; height: 200px;" />
+          <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; border-radius: 50%; background: white; padding: 3px; border: 2px solid var(--ion-color-primary);" />
+        </div>
 
-    <p style="font-size: 13px; color: var(--ion-color-medium);">
-      Los pacientes pueden escanear este código para ver la ubicación y agendar su cita.
-    </p>
+        <p style="font-size: 13px; color: var(--ion-color-medium);">
+          Los pacientes pueden escanear este código para ver la ubicación y agendar su cita.
+        </p>
 
-    <!-- Botones de Acción para el QR -->
-    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-      <ion-button color="medium" expand="block" (click)="imprimirQr()">
-        <ion-icon slot="start" name="print-outline"></ion-icon>
-        Imprimir QR
-      </ion-button>
-      <ion-button color="success" expand="block" (click)="descargarQr()">
-        <ion-icon slot="start" name="download-outline"></ion-icon>
-        Descargar
-      </ion-button>
-    </div>
-  </ion-card-content>
-</ion-card>
-
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+          <ion-button color="medium" expand="block" (click)="imprimirQr()">
+            <ion-icon slot="start" name="print-outline"></ion-icon>
+            Imprimir QR
+          </ion-button>
+          <ion-button color="success" expand="block" (click)="descargarQr()">
+            <ion-icon slot="start" name="download-outline"></ion-icon>
+            Descargar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
     <!-- BOTÓN PARA GUARDAR -->
     <ion-button 

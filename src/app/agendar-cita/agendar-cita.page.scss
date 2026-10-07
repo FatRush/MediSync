@@ -76,3 +76,134 @@ ion-datetime {
   --color: #000000 !important;
   border-radius: 8px;
 }
+
+/* ========================================== */
+/* CONFIGURACIÓN GENERAL Y MODO CLARO         */
+/* ========================================== */
+
+ion-content {
+  --background: #ffffff !important;
+}
+
+/* Toolbar */
+ion-toolbar {
+  --background: #ffffff !important;
+  --color: #333 !important;
+  --min-height: 48px;
+}
+
+/* Título / Saludo */
+.saludo h1,
+.saludo p {
+  color: #000000 !important;
+  text-align: center;
+}
+
+.saludo h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.saludo p {
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Botones */
+ion-button {
+  --background: #007bff !important;
+  --color: #ffffff !important;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* Inputs y selectores */
+ion-item {
+  --background: #f9f9f9 !important;
+  --color: #000000 !important;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+ion-input,
+ion-select,
+ion-datetime {
+  --color: #000000 !important;
+}
+
+/* Lista de horarios */
+.horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.horarios ion-button {
+  --background: #f1f5f9 !important;
+  --color: #000000 !important;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Motivo de consulta */
+.motivo {
+  margin-top: 20px;
+}
+
+.motivo ion-textarea {
+  --background: #f9f9f9 !important;
+  --color: #000000 !important;
+  border-radius: 8px;
+}
+
+
+/* ========================================== */
+/* MODO OSCURO EXCLUSIVO PARA AGENDAR CITA    */
+/* ========================================== */
+
+ion-content.dark-theme {
+  --background: #121212 !important;
+
+  ion-toolbar {
+    --background: #1f1f1f !important;
+    --color: #ffffff !important;
+  }
+
+  h1, h2, h3, p, label, ion-label {
+    color: #ffffff !important;
+  }
+
+  ion-item {
+    --background: #1e1e1e !important;
+    --color: #ffffff !important;
+  }
+
+  ion-input,
+  ion-select,
+  ion-datetime,
+  ion-textarea {
+    --color: #ffffff !important;
+    --placeholder-color: #a0a0a0 !important;
+  }
+
+  ion-card {
+    background: #1e1e1e !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+
+    ion-card-subtitle, 
+    ion-card-title {
+      color: #ffffff !important;
+    }
+  }
+
+  .horarios ion-button {
+    --background: #252525 !important;
+    --color: #ffffff !important;
+  }
+}
+
+

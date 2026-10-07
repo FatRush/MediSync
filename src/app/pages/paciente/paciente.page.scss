@@ -15,8 +15,8 @@ ion-title {
 
 .contenedor {
   width: 100%;
-  max-width: 900px;
-  margin: auto;
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px 25px 40px;
 }
 
@@ -36,18 +36,19 @@ h3 {
 }
 
 .fila {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  gap: 16px;
+  
+  ion-item {
+    flex: 1;
+  }
 }
 
 ion-item {
   --background: transparent;
   --padding-start: 0;
   --inner-padding-end: 0;
-
   margin-bottom: 10px;
-
   border-bottom: 1px solid #dddddd;
 }
 
@@ -63,14 +64,13 @@ ion-select {
   font-size: 14px;
 }
 
-/* --- REGLAS CORREGIDAS PARA ALINEAR EL ICONO A LA DERECHA --- */
+/* --- REGLAS PARA ALINEAR EL ICONO A LA DERECHA --- */
 ion-select {
   width: 100% !important;
   max-width: 100% !important;
   display: flex !important;
 }
 
-/* Expande el contenedor interno de Shadow DOM de Ionic */
 ion-select::part(container) {
   width: 100% !important;
   display: flex !important;
@@ -88,68 +88,65 @@ ion-select::part(icon) {
 }
 /* ------------------------------------------------------------- */
 
+/* Estilos para los botones de tipo de sangre */
 .sangre {
-  margin-top: 15px;
-  margin-bottom: 20px;
-}
+  margin: 16px;
 
-.sangre label {
-  display: block;
-  font-size: 12px;
-  color: #777;
-  margin-bottom: 8px;
-}
+  label {
+    display: block;
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 8px;
+  }
 
-.botones-sangre {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+  .botones-sangre {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 
-.botones-sangre button {
-  background: white;
-  border: 1px solid #bbb;
-  border-radius: 4px;
+    button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: #333333;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
 
-  padding: 6px 10px;
+      &:hover {
+        border-color: #16a6c9;
+      }
 
-  font-size: 11px;
-  color: #555;
-
-  cursor: pointer;
-}
-
-.botones-sangre button:hover {
-  border-color: #16a6c9;
-}
-
-.botones-sangre button.seleccionado {
-  background: #16a6c9;
-  border-color: #16a6c9;
-  color: white;
+      &.seleccionado {
+        background: var(--ion-color-primary, #3880ff);
+        color: #ffffff;
+        border-color: var(--ion-color-primary, #3880ff);
+      }
+    }
+  }
 }
 
 .botones {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 0 16px;
 
-  margin-top: 35px;
-}
-
-.botones ion-button {
-  --border-radius: 5px;
-  text-transform: none;
+  ion-button {
+    --border-radius: 5px;
+    text-transform: none;
+  }
 }
 
 @media (max-width: 700px) {
-
   .contenedor {
     padding: 15px;
   }
 
   .fila {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 0;
   }
 
@@ -160,4 +157,125 @@ ion-select::part(icon) {
   .botones ion-button {
     width: 100%;
   }
+}
+
+
+/* ========================================== */
+/* MODO OSCURO PARA LA VISTA PACIENTE         */
+/* ========================================== */
+
+ion-content.dark-theme {
+  --background: #121212 !important;
+  --color: #ffffff !important;
+
+  /* Títulos y textos generales */
+  h1, h2, h3, p, span, label {
+    color: #ffffff !important;
+  }
+
+  /* Contenedores de inputs */
+  ion-item {
+    --background: #1e1e1e !important;
+    --color: #ffffff !important;
+    border-bottom: 1px solid #2a2a2a !important;
+  }
+
+  /* Textos ingresados y valores */
+  ion-input, ion-select, ion-textarea, ion-datetime {
+    --color: #ffffff !important;
+    --placeholder-color: #a0a0a0 !important;
+    color: #ffffff !important;
+  }
+
+  /* Forzar las etiquetas superiores de los inputs (Nombres, Apellidos, etc.) */
+  ion-input::part(label),
+  ion-select::part(label),
+  ion-textarea::part(label),
+  ion-datetime::part(label) {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  /* Clases internas de etiquetas en componentes de Ionic */
+  .label-text-wrapper, .label-text, .select-text {
+    color: #ffffff !important;
+  }
+
+  /* Botones de tipo de sangre en oscuro */
+  .sangre {
+    label {
+      color: #ffffff !important;
+    }
+
+    .botones-sangre button {
+      background: #1e1e1e !important;
+      color: #ffffff !important;
+      border-color: #444444 !important;
+
+      &.seleccionado {
+        background: var(--ion-color-primary, #3880ff) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+/* ========================================== */
+/* FORZAR ETIQUETAS INTERNAS DE IONIC A BLANCO */
+/* ========================================== */
+
+ion-content.dark-theme {
+  /* Apunta a las variables internas de los componentes de Ionic para el color de etiquetas y placeholders */
+  ion-input, 
+  ion-select, 
+  ion-textarea, 
+  ion-datetime {
+    --highlight-color: #3880ff;
+    --placeholder-color: #a0a0a0;
+  }
+
+  /* Sobrescribir el Shadow Part de los labels en inputs modernos de Ionic */
+  ion-input::part(label),
+  ion-select::part(label),
+  ion-textarea::part(label),
+  ion-datetime::part(label) {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  /* Selector profundo para asegurar que cualquier texto de label interno cambie */
+  ion-item {
+    ion-label, 
+    .label-text, 
+    .label-text-wrapper {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+/* Cambiar el color del label y la línea a verde cuando el input tiene el foco o está activo */
+ion-item {
+  --highlight-color: #28a745 !important; // Color verde (puedes cambiarlo al tono de verde que prefieras)
+}
+
+/* Forzar que el label tome el color verde cuando el ion-input o ion-select está enfocado */
+ion-input.ion-focused::part(label),
+ion-select.ion-has-focus::part(label),
+ion-textarea.ion-focused::part(label) {
+  color: #28a745 !important;
+}
+
+/* Si usas la clase general o el estado de foco de Ionic */
+ion-item.ion-focused {
+  --ion-color-primary: #28a745 !important;
+}
+
+/* Cambiar el label a verde cuando el ion-item tenga el foco en cualquiera de sus inputs */
+ion-item:focus-within {
+  ion-label {
+    color: #28a745 !important; // Cambia al tono de verde que prefieras
+  }
+  
+  --highlight-color: #28a745 !important;
 }

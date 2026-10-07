@@ -1,122 +1,71 @@
 <ion-header>
-
   <ion-toolbar>
-
     <ion-buttons slot="start">
-
       <ion-back-button
         defaultHref="/home">
       </ion-back-button>
-
     </ion-buttons>
-
     <ion-title>
       Mis citas
     </ion-title>
-
   </ion-toolbar>
-
 </ion-header>
-
-
-<ion-content>
-
+<ion-content [fullscreen]="true" class="ion-padding" [class.dark-theme]="darkMode">
   <div class="contenedor">
-
     <h1>
       Mis citas
     </h1>
-
-
     <div
       *ngIf="citas.length === 0"
       class="sin-citas">
-
       <ion-icon
         name="calendar-outline">
       </ion-icon>
-
       <h2>
         No tienes citas
       </h2>
-
       <p>
         Agenda tu primera cita médica.
       </p>
-
       <ion-button
         routerLink="/agendar-cita">
-
         Agendar cita
-
       </ion-button>
-
     </div>
-
-
     <ion-card
-      *ngFor="let cita of citas"
-      (click)="verDetalle(cita)">
-
+      *ngFor="let cita of citas" (click)="verDetalle(cita)">
       <ion-card-header>
-
         <div class="encabezado">
-
           <div>
-
             <ion-card-subtitle>
               {{ cita.especialidad }}
             </ion-card-subtitle>
-
             <ion-card-title>
               {{ cita.medicoNombre }}
             </ion-card-title>
-
           </div>
-
-
           <span
-            class="estado"
-            [class]="cita.estado">
-
+            class="estado" [class]="cita.estado">
             {{ cita.estado }}
-
           </span>
-
         </div>
-
       </ion-card-header>
-
-
       <ion-card-content>
-
         <div class="informacion">
-
           <span>
             📅 {{ cita.fecha }}
           </span>
-
           <span>
             🕐 {{ cita.hora }}
           </span>
-
         </div>
-
         <p>
           {{ cita.motivo }}
         </p>
-
         <ion-button
-          fill="clear">
-
-          Ver detalle
-
+          fill="clear"> Ver detalle
         </ion-button>
-
       </ion-card-content>
-
     </ion-card>
-
   </div>
-
 </ion-content>

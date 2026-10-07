@@ -79,3 +79,55 @@ ion-title {
 ion-back-button {
   --color: #000000 !important; /* ícono flecha en negro */
 }
+
+/* ========================================== */
+/* MODO OSCURO EXCLUSIVO PARA MIS CITAS       */
+/* ========================================== */
+
+ion-content.dark-theme {
+  --background: #121212 !important;
+
+  ion-toolbar {
+    --background: #1f1f1f !important;
+    --color: #ffffff !important;
+  }
+
+  ion-title {
+    color: #ffffff !important;
+  }
+
+  /* Títulos y textos principales */
+  h1, h2, h3, p, span, strong, b {
+    color: #ffffff !important;
+  }
+
+  /* Estado vacío (cuando no hay citas) */
+  .sin-citas {
+    ion-icon {
+      color: #a0a0a0 !important;
+    }
+    p {
+      color: #b0b0b0 !important;
+    }
+  }
+
+  /* Tarjetas de citas */
+  ion-card {
+    background: #1e1e1e !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+
+    ion-card-subtitle {
+      color: #3880ff !important; /* Color destacado para la especialidad */
+    }
+
+    ion-card-title {
+      color: #ffffff !important;
+    }
+  }
+
+  /* Información de fechas y horas dentro de la tarjeta */
+  .informacion span {
+    color: #d1d5db !important;
+  }
+}

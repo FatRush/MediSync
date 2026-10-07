@@ -10,8 +10,7 @@
     </ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-
+<ion-content class="fondo-paciente ion-padding" [class.dark-theme]="darkMode">
   <div class="contenedor">
     <h2>INGRESA TU INFORMACIÓN</h2>
     <form [formGroup]="pacienteForm" (ngSubmit)="guardar()">
@@ -51,20 +50,22 @@
   </ion-select>
 </ion-item>
 
-  <ion-item lines="none">
-    <ion-label position="stacked">
-      Número de Identificación
-    </ion-label>
-    <ion-input
-      type="text"
-      formControlName="numeroIdentificacion">
-    </ion-input>
-  </ion-item> 
+<!-- Campo de Número de Identificación con formateador de DNI -->
+<ion-item lines="none">
+  <ion-input
+    label="Número de Identificación"
+    label-placement="stacked"
+    formControlName="numeroIdentificacion"
+    (ionInput)="formatearDNI($event)"
+    maxlength="15"
+    placeholder="XXXX-XXXX-XXXX">
+  </ion-input>
+</ion-item>
 
       <!-- FECHA DE NACIMIENTO -->
       <ion-item lines="none">
         <ion-label position="stacked">
-          Fecha de nacimiento
+          Fecha de Nacimiento
         </ion-label>
         <ion-input
           type="date"
@@ -114,7 +115,7 @@
       <!-- TIPO DE SANGRE -->
       <div class="sangre">
         <label>
-          Tipo de sangre
+          Tipo de Sangre
         </label>
         <div class="botones-sangre">
           <button
@@ -168,7 +169,7 @@
       <!-- DIRECCIÓN -->
       <ion-item lines="none">
         <ion-label position="stacked">
-          Dirección exacta
+          Dirección Exacta
         </ion-label>
         <ion-input
           formControlName="direccion">
@@ -177,7 +178,7 @@
 
       <!-- DATOS DE CONTACTO -->
       <h3>
-        Datos de contacto
+        Datos de Contacto
       </h3>
       <div class="fila">
         <ion-item lines="none">
@@ -191,7 +192,7 @@
         </ion-item>
         <ion-item lines="none">
           <ion-label position="stacked">
-            Numero de Telefono en Caso de Emergencia
+            Número de Teléfono en Caso de Emergencia
           </ion-label>
           <ion-input
             type="numero"
