@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
+import { OnInit, OnDestroy } from '@angular/core';
 import { 
   IonHeader, 
   IonToolbar, 
@@ -101,12 +102,24 @@ export class SecretariaPage {
   };
 
   citasFiltradas: any[] = [];
+  
+  // Getters para separar las citas activas de las canceladas
+  get citasActivas() {
+    return this.citasFiltradas.filter(cita => (cita.estado || '').toLowerCase() !== 'cancelada');
+  }
+
+  get citasCanceladas() {
+    return this.citasFiltradas.filter(cita => (cita.estado || '').toLowerCase() === 'cancelada');
+  }
+
   fechaMinima: string = new Date().toISOString().split('T')[0]; 
 
   horariosGenerales: string[] = [
     '08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'
   ];
   horasOcupadasDelDia: string[] = [];
+  fechaActual: Date = new Date();
+  private timer: any;
 
   constructor(private toastController: ToastController, private cdRef: ChangeDetectorRef) {
     addIcons({logOutOutline,addCircleOutline,calendarOutline,timeOutline,checkmarkCircleOutline,square,logoWhatsapp,lockClosedOutline,printOutline,cardOutline,documentTextOutline});
@@ -124,6 +137,15 @@ export class SecretariaPage {
 
   ngOnInit() {
     this.cargarAgendaDelDia();
+    this.timer = setInterval(() => {
+      this.fechaActual = new Date();
+    }, 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 
   async ionViewWillEnter() {
@@ -155,94 +177,80 @@ export class SecretariaPage {
     }
   }
 
- cargarCitasSecretaria() {
-  this.cargando = true;
-  const qCitas = query(collection(this.firestore, 'citas'));
+  cargarCitasSecretaria() {
+    this.cargando = true;
+    const qCitas = query(collection(this.firestore, 'citas'));
 
-  // 🔄 onSnapshot se queda ESCUCHANDO cambios en tiempo real
-  onSnapshot(qCitas, (snapshot) => {
-    this.citas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    // Refrescamos agenda, filtros y detectamos cambios en pantalla
-    this.cargarAgendaDelDia(); 
-    this.cdRef.detectChanges();
-    this.cargando = false;
-  }, (error) => {
-    console.error('Error escuchando citas en tiempo real:', error);
-    this.cargando = false;
-  });
-}
+    onSnapshot(qCitas, (snapshot) => {
+      this.citas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.cargarAgendaDelDia(); 
+      this.cdRef.detectChanges();
+      this.cargando = false;
+    }, (error) => {
+      console.error('Error escuchando citas en tiempo real:', error);
+      this.cargando = false;
+    });
+  }
 
-  // Procesa la disponibilidad visual, lista filtrada y métricas según el día seleccionado
- cargarAgendaDelDia() {
+  cargarAgendaDelDia() {
   const fechaBase = this.fechaFiltro ? this.fechaFiltro : new Date().toISOString();
   const fechaSeleccionada = fechaBase.split('T')[0];
 
   const citasRef = collection(this.firestore, 'citas');
 
-  // 🔄 Escuchador en tiempo real de Firestore
   onSnapshot(citasRef, (snapshot) => {
-    // 1. Actualizamos el listado principal con lo último de la BD
     this.citas = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    // 2. Procesamos las horas ocupadas
     this.horasOcupadasDelDia = [];
 
     this.citas.forEach(cita => {
       const citaFecha = cita.fecha ? cita.fecha.trim() : ''; 
       const citaHora = cita.hora ? cita.hora.trim() : '';
       const citaDoctor = cita.medicoNombre ? cita.medicoNombre.trim() : '';
+      const estadoCita = (cita.estado || '').toLowerCase().trim();
       
       const coincideDoctor = this.doctorFiltro === 'Todos' || citaDoctor === this.doctorFiltro;
 
-      if (citaFecha === fechaSeleccionada && cita.estado !== 'cancelada' && coincideDoctor) {
+      // Excluimos las canceladas para que la hora vuelva a quedar libre
+      if (citaFecha === fechaSeleccionada && estadoCita !== 'cancelada' && coincideDoctor) {
         this.horasOcupadasDelDia.push(citaHora);
       }
     });
 
-    // 3. Refrescamos vista y métricas
     this.filtrarCitas();
     this.calcularMetricas();
   });
 }
 
-  // Filtra las citas mostradas asegurando que correspondan AL DÍA SELECCIONADO y ordenadas por HORA
-  // Filtra las citas mostradas y las ordena por FECHA y HORA
   filtrarCitas() {
     const texto = this.textoBusqueda.toLowerCase().trim();
     const fechaSeleccionada = this.fechaFiltro ? this.fechaFiltro.split('T')[0] : '';
     
     this.citasFiltradas = this.citas
       .filter(cita => {
-        // 1. Filtrar exactamente por la fecha seleccionada
         const citaFecha = cita.fecha ? cita.fecha.trim() : '';
         const coincideFecha = citaFecha === fechaSeleccionada;
 
-        // 2. Coincidencia por texto del paciente
         const nombreCompleto = `${cita.pacienteNombre || ''} ${cita.pacienteApellido || ''}`.toLowerCase();
         const coincideTexto = texto === '' || nombreCompleto.includes(texto);
         
-        // 3. Coincidencia por Doctor
         const citaDoctor = cita.medicoNombre ? cita.medicoNombre.trim() : '';
         const coincideDoctor = this.doctorFiltro === 'Todos' || citaDoctor === this.doctorFiltro;
 
         return coincideFecha && coincideTexto && coincideDoctor;
       })
       .sort((a, b) => {
-        // 1. Comparar primero por Fecha (YYYY-MM-DD)
         const fechaA = a.fecha || '';
         const fechaB = b.fecha || '';
         const comparacionFecha = fechaA.localeCompare(fechaB);
 
-        // Si las fechas son distintas, las ordena por fecha
         if (comparacionFecha !== 0) {
           return comparacionFecha;
         }
 
-        // 2. Si es la misma fecha, compara por Hora (HH:mm)
         const horaA = a.hora || '';
         const horaB = b.hora || '';
         return horaA.localeCompare(horaB);
@@ -304,7 +312,7 @@ export class SecretariaPage {
               c.id !== cita.id &&
               c.fecha === data.fecha &&
               c.hora === data.hora &&
-              c.estado !== 'cancelada' &&
+              (c.estado || '').toLowerCase() !== 'cancelada' &&
               c.medicoNombre === cita.medicoNombre
             );
 
@@ -354,20 +362,14 @@ export class SecretariaPage {
     }
   }
 
-  // 🟢 MÉTODO PARA NORMALIZAR EL TELÉFONO
-normalizarTelefono(input: string): string {
-  if (!input) return '';
-  
-  // Remueve letras, espacios, guiones, paréntesis o el signo +
-  let numeroLimpio = input.toString().replace(/\D/g, ''); 
-
-  // Si se ingresaron 8 dígitos (ej: 96606889), agrega automáticamente el prefijo 504 de Honduras
-  if (numeroLimpio.length === 8) {
-    numeroLimpio = `504${numeroLimpio}`;
+  normalizarTelefono(input: string): string {
+    if (!input) return '';
+    let numeroLimpio = input.toString().replace(/\D/g, ''); 
+    if (numeroLimpio.length === 8) {
+      numeroLimpio = `504${numeroLimpio}`;
+    }
+    return numeroLimpio;
   }
-
-  return numeroLimpio; // Devolverá "50496606889"
-}
 
   async abrirModalAgendarExterno() {
     try {
@@ -419,45 +421,47 @@ normalizarTelefono(input: string): string {
 
               const telefonoLimpio = this.normalizarTelefono(data.telefono);
 
-      const horarioOcupado = this.citas.some(cita => {
-        const citaFecha = cita.fecha ? cita.fecha.trim() : '';
-        const citaHora = cita.hora ? cita.hora.trim() : '';
-        
-        return citaFecha === data.fecha && 
-               citaHora === data.hora && 
-               cita.estado !== 'cancelada' &&
-               cita.medicoNombre === medicoNombre;
-      });
+              const horarioOcupado = this.citas.some(cita => {
+                const citaFecha = cita.fecha ? cita.fecha.trim() : '';
+                const citaHora = cita.hora ? cita.hora.trim() : '';
+                const estadoCita = (cita.estado || '').toLowerCase().trim();
+                
+                // Un horario está ocupado si coincide fecha, hora, doctor Y su estado NO es cancelada
+                return citaFecha === data.fecha && 
+                       citaHora === data.hora && 
+                       estadoCita !== 'cancelada' &&
+                       cita.medicoNombre === medicoNombre;
+              });
 
-      if (horarioOcupado) {
-        this.mostrarAlertaError(`El horario de las ${data.hora} ya está ocupado para este doctor. Por favor seleccione otro.`);
-        return false;
-      }
+              if (horarioOcupado) {
+                this.mostrarAlertaError(`El horario de las ${data.hora} ya está ocupado o reservado para este doctor. Por favor seleccione otro.`);
+                return false;
+              }
 
-      try {
-        await addDoc(collection(this.firestore, 'citas'), {
-          pacienteNombre: data.pacienteNombre,
-          pacienteId: 'externo_' + Date.now(),
-          telefono: telefonoLimpio,         // 🟢 Guarda "50496606889"
-          pacienteTelefono: telefonoLimpio, // 🟢 Guarda "50496606889"
-          medicoNombre: medicoNombre,
-          especialidad: especialidad,
-          fecha: data.fecha,
-          hora: data.hora,
-          motivo: data.motivo || 'Consulta externa',
-          estado: 'pendiente',
-          receta: '',
-          creadoEn: Timestamp.now()
-        });
-        await this.cargarCitasSecretaria();
-        return true;
-      } catch (err) {
-        console.error('Error al registrar cita externa:', err);
-        return false;
-      }
-    }
-  }
-]
+              try {
+                await addDoc(collection(this.firestore, 'citas'), {
+                  pacienteNombre: data.pacienteNombre,
+                  pacienteId: 'externo_' + Date.now(),
+                  telefono: telefonoLimpio,
+                  pacienteTelefono: telefonoLimpio,
+                  medicoNombre: medicoNombre,
+                  especialidad: especialidad,
+                  fecha: data.fecha,
+                  hora: data.hora,
+                  motivo: data.motivo || 'Consulta externa',
+                  estado: 'pendiente',
+                  receta: '',
+                  creadoEn: Timestamp.now()
+                });
+                await this.cargarCitasSecretaria();
+                return true;
+              } catch (err) {
+                console.error('Error al registrar cita externa:', err);
+                return false;
+              }
+            }
+          }
+        ]
       });
 
       await alert.present();
@@ -765,125 +769,113 @@ normalizarTelefono(input: string): string {
     }
   }
 
-async enviarRecordatorioWhatsApp(cita: any) {
-  // 1. Verificar si la cita ya trae el teléfono
-  let telefono = cita.telefono || cita.pacienteTelefono || cita.celular;
+  async enviarRecordatorioWhatsApp(cita: any) {
+    let telefono = cita.telefono || cita.pacienteTelefono || cita.celular;
 
-  // 2. Si no lo trae, buscarlo en Firestore usando la API Modular (doc/getDoc)
-  if (!telefono && (cita.pacienteId || cita.uid)) {
-    try {
-      const userId = cita.pacienteId || cita.uid;
-      const userRef = doc(this.firestore, 'users', userId); // Usa 'usuarios' o 'users' según tu BD
-      const userSnap = await getDoc(userRef);
+    if (!telefono && (cita.pacienteId || cita.uid)) {
+      try {
+        const userId = cita.pacienteId || cita.uid;
+        const userRef = doc(this.firestore, 'users', userId);
+        const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        telefono = userData['telefono'] || userData['celular'] || userData['phone'];
-      }
-    } catch (e) {
-      console.error('Error obteniendo el teléfono del usuario:', e);
-    }
-  }
-
-  // 3. Si sigue sin teléfono, notificar al usuario
-  if (!telefono) {
-    this.mostrarToast('Esta cita no tiene un número de teléfono asignado.', 'warning');
-    return;
-  }
-
-  // 4. Formatear datos y enviar al servidor de Node.js / Express
-  const body = {
-    telefono: telefono,
-    pacienteNombre: `${cita.pacienteNombre || cita.paciente || ''} ${cita.pacienteApellido || ''}`.trim(),
-    horaCita: cita.hora || '08:00',
-    doctorNombre: cita.medicoNombre || cita.doctorNombre || 'Doctor(a)'
-  };
-
-  this.http.post('http://localhost:3000/api/enviar-whatsapp', body).subscribe({
-    next: () => this.mostrarToast('Recordatorio enviado por WhatsApp', 'success'),
-    error: (err) => {
-      console.error('Error al enviar:', err);
-      this.mostrarToast('Error al enviar el mensaje por WhatsApp', 'danger');
-    }
-  });
-}
-async enviarRecordatoriosProximaHora() {
-  const ahora = new Date();
-  
-  // Filtrar las citas que estén pendientes y cuya hora esté dentro de los próximos 60 minutos
-  const citasProximas = this.citasFiltradas.filter((cita: any) => {
-    // Si la cita no está pendiente o no tiene hora/fecha, se ignora
-    if (cita.estado === 'Atendida' || cita.estado === 'Cancelada' || !cita.hora) {
-      return false;
-    }
-
-    // Parsear fecha y hora de la cita (asumiendo fecha 'YYYY-MM-DD' y hora 'HH:mm')
-    const fechaBase = cita.fecha || ahora.toISOString().split('T')[0];
-    const fechaHoraCita = new Date(`${fechaBase}T${cita.hora}:00`);
-
-    // Calcular la diferencia en minutos
-    const diferenciaMinutos = (fechaHoraCita.getTime() - ahora.getTime()) / (1000 * 60);
-
-    // Selecciona citas que ocurran entre ahora (0 min) y los próximos 60 min (puedes ajustar el rango, ej. 0 a 120)
-    return diferenciaMinutos >= 0 && diferenciaMinutos <= 60;
-  });
-
-  if (citasProximas.length === 0) {
-    this.mostrarToast('No hay citas agendadas dentro de la próxima hora.', 'info');
-    return;
-  }
-
-  this.mostrarToast(`Encontradas ${citasProximas.length} cita(s). Enviando recordatorios...`, 'primary');
-
-  // Recorrer las citas encontradas y enviar con pausa de 2 segundos entre envíos
-  let enviadas = 0;
-  for (const cita of citasProximas) {
-    await this.enviarRecordatorioWhatsApp(cita);
-    enviadas++;
-    // Pausa de 2 segundos para no saturar el socket de Baileys
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
-
-  this.mostrarToast(`Proceso finalizado. Se enviaron ${enviadas} recordatorios.`, 'success');
-}
-
-async obtenerCitas() {
-  this.cargando = true;
-  try {
-    const citasRef = collection(this.firestore, 'citas');
-    const querySnapshot = await getDocs(citasRef);
-
-    this.citasFiltradas = await Promise.all(
-      querySnapshot.docs.map(async (documento) => {
-        const data = documento.data();
-        const id = documento.id;
-
-        let telefono = data['telefono'] || data['pacienteTelefono'] || data['telefonoContacto'];
-
-        // Si no tiene teléfono en la cita pero existe el pacienteId, buscarlo en 'usuarios'
-        if (!telefono && data['pacienteId']) {
-          const userDocRef = doc(this.firestore, 'usuarios', data['pacienteId']);
-          const userSnap = await getDoc(userDocRef);
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            telefono = userData['telefono'] || userData['celular'] || userData['phone'];
-          }
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          telefono = userData['telefono'] || userData['celular'] || userData['phone'];
         }
+      } catch (e) {
+        console.error('Error obteniendo el teléfono del usuario:', e);
+      }
+    }
 
-        return {
-          id,
-          ...data,
-          pacienteTelefono: telefono
-        };
-      })
-    );
-  } catch (error) {
-    console.error('Error obteniendo citas de Firestore:', error);
-  } finally {
-    this.cargando = false;
+    if (!telefono) {
+      this.mostrarToast('Esta cita no tiene un número de teléfono asignado.', 'warning');
+      return;
+    }
+
+    const body = {
+      telefono: telefono,
+      pacienteNombre: `${cita.pacienteNombre || cita.paciente || ''} ${cita.pacienteApellido || ''}`.trim(),
+      horaCita: cita.hora || '08:00',
+      doctorNombre: cita.medicoNombre || cita.doctorNombre || 'Doctor(a)'
+    };
+
+    this.http.post('http://localhost:3000/api/enviar-whatsapp', body).subscribe({
+      next: () => this.mostrarToast('Recordatorio enviado por WhatsApp', 'success'),
+      error: (err) => {
+        console.error('Error al enviar:', err);
+        this.mostrarToast('Error al enviar el mensaje por WhatsApp', 'danger');
+      }
+    });
   }
-}
 
+  async enviarRecordatoriosProximaHora() {
+    const ahora = new Date();
+    
+    const citasProximas = this.citasFiltradas.filter((cita: any) => {
+      const estadoCita = (cita.estado || '').toLowerCase();
+      if (estadoCita === 'atendida' || estadoCita === 'cancelada' || !cita.hora) {
+        return false;
+      }
+
+      const fechaBase = cita.fecha || ahora.toISOString().split('T')[0];
+      const fechaHoraCita = new Date(`${fechaBase}T${cita.hora}:00`);
+      const diferenciaMinutos = (fechaHoraCita.getTime() - ahora.getTime()) / (1000 * 60);
+
+      return diferenciaMinutos >= 0 && diferenciaMinutos <= 60;
+    });
+
+    if (citasProximas.length === 0) {
+      this.mostrarToast('No hay citas agendadas dentro de la próxima hora.', 'info');
+      return;
+    }
+
+    this.mostrarToast(`Encontradas ${citasProximas.length} cita(s). Enviando recordatorios...`, 'primary');
+
+    let enviadas = 0;
+    for (const cita of citasProximas) {
+      await this.enviarRecordatorioWhatsApp(cita);
+      enviadas++;
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    this.mostrarToast(`Proceso finalizado. Se enviaron ${enviadas} recordatorios.`, 'success');
+  }
+
+  async obtenerCitas() {
+    this.cargando = true;
+    try {
+      const citasRef = collection(this.firestore, 'citas');
+      const querySnapshot = await getDocs(citasRef);
+
+      this.citasFiltradas = await Promise.all(
+        querySnapshot.docs.map(async (documento) => {
+          const data = documento.data();
+          const id = documento.id;
+
+          let telefono = data['telefono'] || data['pacienteTelefono'] || data['telefonoContacto'];
+
+          if (!telefono && data['pacienteId']) {
+            const userDocRef = doc(this.firestore, 'usuarios', data['pacienteId']);
+            const userSnap = await getDoc(userDocRef);
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              telefono = userData['telefono'] || userData['celular'] || userData['phone'];
+            }
+          }
+
+          return {
+            id,
+            ...data,
+            pacienteTelefono: telefono
+          };
+        })
+      );
+    } catch (error) {
+      console.error('Error obteniendo citas de Firestore:', error);
+    } finally {
+      this.cargando = false;
+    }
+  }
 
   async cerrarSesion() {
     try {

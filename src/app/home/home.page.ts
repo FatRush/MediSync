@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { IaService } from '../services/ia.service';
 import { MedicosService, Medico } from '../services/medico.service';
 import { collectionData, doc, updateDoc } from '@angular/fire/firestore';
+import { OnInit, OnDestroy } from '@angular/core';
 import { 
   NavController, 
   IonHeader, 
@@ -24,11 +25,10 @@ import {
   IonSearchbar,
   AlertController,
   LoadingController, 
-  IonBadge, IonToggle } from '@ionic/angular/standalone';
+  IonBadge, IonToggle, IonBackButton } from '@ionic/angular/standalone';
 import { Auth, signOut } from '@angular/fire/auth';
 import { Firestore, collection, getDocs, query, where, orderBy } from '@angular/fire/firestore';
 import { PacienteService } from '../services/paciente.service';
-
 import { addIcons } from 'ionicons';
 import { 
   ellipsisVertical, 
@@ -48,7 +48,7 @@ declare var paypal: any;
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [ 
+  imports: [IonBackButton,  
     IonBadge, 
     CommonModule,
     FormsModule,
@@ -81,6 +81,8 @@ export class HomePage {
   citaProxima: any = null;
   usuarioId: string = '';
   darkMode: boolean = false;
+  fechaActual: Date = new Date();
+  private timer: any;
 
   // Controla qué cita tiene desplegado el botón de PayPal
   citaSeleccionadaParaPago: string | null = null;
@@ -116,7 +118,17 @@ ngOnInit() {
   
   // Aplicar el estado inicial al body de manera global
   document.body.classList.toggle('dark', this.darkMode);
+
+  this.timer = setInterval(() => {
+      this.fechaActual = new Date();
+    }, 1000);
 }
+
+ngOnDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  }
 
   async ionViewWillEnter() {
     

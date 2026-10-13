@@ -106,46 +106,25 @@ ion-card {
   }
 }
 
-/* Tarjeta especial Doctor IA */
-.ai-doctor-card {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+/* Tarjeta especial Doctor IA (Modo Claro) */
+.tarjeta-ia {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   cursor: pointer;
 
-  .badge-ia {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
+  .item-ia {
+    --background: transparent;
+    --color: #000000;
 
-  h2 {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin: 6px 0 2px 0;
-    color: #ffffff;
-  }
+    h2 {
+      color: #1e293b !important;
+    }
 
-  p {
-    font-size: 0.85rem;
-    opacity: 0.9;
-    margin: 0;
-    color: #ffffff;
-  }
-
-  .ai-card-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .ai-icon-wrapper ion-icon {
-    font-size: 2.5rem;
-    color: #ffd700;
+    p {
+      color: #64748b !important;
+    }
   }
 }
 
@@ -276,10 +255,10 @@ ion-modal {
 
 
 /* ========================================== */
-/* MODO OSCURO EXCLUSIVO PARA ESTE HOME       */
+/* MODO OSCURO UNIFICADO                      */
 /* ========================================== */
 
-ion-content.dark-theme {
+ion-content.dark-theme, body.dark, .ion-palette-dark {
   --background: #121212;
   --color: #ffffff;
 
@@ -297,7 +276,27 @@ ion-content.dark-theme {
     color: #ffffff !important;
   }
 
-  /* Tarjetas de acciones y tarjetas en general */
+  /* Tarjeta de Soporte IA en Modo Oscuro */
+  .tarjeta-ia {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+
+    .item-ia {
+      --background: transparent !important;
+      --color: #ffffff !important;
+
+      h2 {
+        color: #ffffff !important;
+      }
+
+      p {
+        color: #94a3b8 !important;
+      }
+    }
+  }
+
+  /* Resto de tarjetas */
   ion-card,
   .accion-card,
   .receta-card {
@@ -348,5 +347,21 @@ ion-content.dark-theme {
     --background: #1e1e1e !important;
     --color: #ffffff !important;
     --placeholder-color: #a0a0a0 !important;
+  }
+}
+
+.fecha-reloj {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Asegurar visibilidad en modo oscuro
+ion-content.dark-theme, body.dark, .ion-palette-dark {
+  .fecha-reloj {
+    color: #94a3b8 !important;
   }
 }

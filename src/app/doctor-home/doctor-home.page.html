@@ -19,6 +19,12 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+
+  <!-- Muestra la fecha y hora formateada -->
+  <p class="fecha-reloj">
+    <ion-icon name="calendar-outline"></ion-icon> 
+    {{ fechaActual | date: 'fullDate' }} - {{ fechaActual | date: 'mediumTime' }}
+  </p>
   
   <!-- TARJETA DEL PERFIL DEL DOCTOR -->
 <ion-card class="ion-margin-bottom tarjeta-doctor">
@@ -32,6 +38,12 @@
         <ion-icon name="medkit-outline"></ion-icon> {{ especialidad || 'Especialista' }}
       </p>
     </ion-label>
+
+    <!-- Botón visible solo en pantallas medianas hacia arriba (Desktop) -->
+    <ion-button color="primary" class="ion-hide-sm-down" (click)="abrirModalNuevaCita()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Nueva Cita
+    </ion-button>
   </ion-item>
   
   <ion-card-content>
@@ -39,6 +51,12 @@
     <p class="ion-margin-top texto-correo">
       <ion-icon name="mail-outline"></ion-icon> <strong>Correo:</strong> {{ correoActual }}
     </p>
+
+    <!-- Botón en ancho completo visible solo en celulares (Móvil) -->
+    <ion-button color="primary" expand="block" class="ion-hide-md-up ion-margin-top" (click)="abrirModalNuevaCita()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Nueva Cita
+    </ion-button>
   </ion-card-content>
 </ion-card>
 
@@ -105,7 +123,11 @@
       @for (cita of citasPendientes; track cita.id || $index) {
         <ion-card class="ion-margin-bottom">
           <ion-card-header>
-            <ion-card-title><strong style="color: var(--ion-color-dark);">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-title>
+              <strong style="color: var(--ion-color-dark);">
+                👤 {{ cita.nombrePaciente || cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido || '' }}
+              </strong>
+            </ion-card-title>
             <ion-card-subtitle class="ion-margin-top">
               <ion-icon name="calendar-outline"></ion-icon> {{ cita.fecha }} 
               <ion-icon name="time-outline" class="ion-margin-start"></ion-icon> {{ cita.hora }}
@@ -142,6 +164,10 @@
                 </ion-chip>
               }
             </div>
+            <ion-button color="danger" fill="clear" (click)="cancelarCita(cita)">
+            <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+            Cancelar
+            </ion-button>
 
             <ion-button color="success" expand="block" class="ion-margin-top" (click)="confirmarYNotificarPorWhatsApp(cita)">
               <ion-icon name="logo-whatsapp" slot="start"></ion-icon>
@@ -164,7 +190,11 @@
       @for (cita of citasConfirmadas; track cita.id || $index) {
         <ion-card class="ion-margin-bottom">
           <ion-card-header>
-            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-title>
+              <strong style="color: #1a1a1a;">
+                👤 {{ cita.nombrePaciente || cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido || '' }}
+              </strong>
+            </ion-card-title>
             <ion-card-subtitle class="ion-margin-top">
               <ion-icon name="calendar-outline"></ion-icon> {{ cita.fecha }} 
               <ion-icon name="time-outline" class="ion-margin-start"></ion-icon> {{ cita.hora }}
@@ -172,6 +202,9 @@
           </ion-card-header>
           <ion-card-content>
             <p><strong>Motivo:</strong> {{ cita.motivo || 'No especificado' }}</p>
+            @if (cita.telefono || cita.pacienteTelefono) {
+              <p><strong>Teléfono:</strong> {{ cita.telefono || cita.pacienteTelefono }}</p>
+            }
             
             <!-- INFORMACIÓN DEL ESTADO DE PAGO -->
             <div class="info-pago-doctor ion-margin-top">
@@ -254,7 +287,11 @@
       @for (cita of citasAtendidasFiltradas; track cita.id || $index) {
         <ion-card class="ion-margin-bottom">
           <ion-card-header>
-            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-title>
+              <strong style="color: #1a1a1a;">
+                👤 {{ cita.nombrePaciente || cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido || '' }}
+              </strong>
+            </ion-card-title>
             <ion-card-subtitle>📅 {{ cita.fecha }} - Documento: {{ cita.tipoDoc || 'N/A' }}</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
@@ -306,13 +343,28 @@
       @for (cita of citasCanceladas; track cita.id || $index) {
         <ion-card class="ion-margin-bottom">
           <ion-card-header>
-            <ion-card-title><strong style="color: #1a1a1a;">{{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}</strong></ion-card-title>
+            <ion-card-title>
+              <strong style="color: #1a1a1a;">
+                👤 {{ cita.nombrePaciente || cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido || '' }}
+              </strong>
+            </ion-card-title>
             <ion-card-subtitle color="danger">
               <ion-icon name="close-circle-outline"></ion-icon> Cancelada
             </ion-card-subtitle>
           </ion-card-header>
+          
           <ion-card-content>
             <p>📅 Fecha original: {{ cita.fecha }} a las {{ cita.hora }}</p>
+            
+            <!-- Motivo y Datos de Auditoría integrados -->
+            <div class="ion-padding-top">
+              <p><strong>Motivo:</strong> {{ cita.motivoCancelacion || 'No especificado' }}</p>
+              <p class="ion-text-danger" *ngIf="cita.canceladaEn">
+                <ion-icon name="time-outline"></ion-icon> 
+                Cancelado el: {{ cita.canceladaEn?.toDate ? (cita.canceladaEn.toDate() | date:'medium') : (cita.canceladaEn | date:'medium') }} 
+                <strong>(Por: {{ cita.canceladoPor || 'Doctor' }})</strong>
+              </p>
+            </div>
           </ion-card-content>
         </ion-card>
       }
@@ -380,7 +432,7 @@
 
                 <ion-label class="ion-text-wrap">
                   <h2 style="font-size: 16px; font-weight: bold; color: var(--ion-color-dark);">
-                    {{ cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido }}
+                    {{ cita.nombrePaciente || cita.pacienteNombre || cita.nombre }} {{ cita.pacienteApellido || '' }}
                   </h2>
                   
                   <p style="font-size: 13px; margin-top: 4px;">
@@ -471,7 +523,7 @@
           
           <h3 style="text-align: center; color: #007bff;">{{ atencion.tipoDoc === 'receta' ? 'RECETA MÉDICA' : 'CONSTANCIA DE INCAPACIDAD' }}</h3>
           
-          <p><b>Paciente:</b> {{ citaSeleccionada?.pacienteNombre }} {{ citaSeleccionada?.pacienteApellido }}</p>
+          <p><b>Paciente:</b> {{ citaSeleccionada?.nombrePaciente || citaSeleccionada?.pacienteNombre }} {{ citaSeleccionada?.pacienteApellido }}</p>
           <p><b>Fecha:</b> {{ obtenFechaActual() }}</p>
           
           <div *ngIf="atencion.presionArterial || atencion.pesoKg">
@@ -590,7 +642,7 @@
     <ion-content class="ion-padding" color="light">
       @if (citaSeleccionada) {
         <div>
-          <p><strong>Paciente:</strong> {{ citaSeleccionada.pacienteNombre || citaSeleccionada.nombre }} {{ citaSeleccionada.pacienteApellido }}</p>
+          <p><strong>Paciente:</strong> {{ citaSeleccionada.nombrePaciente || citaSeleccionada.pacienteNombre }} {{ citaSeleccionada.pacienteApellido }}</p>
 
           <ion-item class="ion-margin-bottom">
             <ion-select label="Tipo de Documento" labelPlacement="stacked" [(ngModel)]="atencion.tipoDoc" placeholder="Seleccione">
@@ -745,7 +797,7 @@
             <ion-card class="ion-no-margin ion-margin-bottom">
               <ion-card-header>
                 <ion-card-title>
-                  Paciente: {{ citaExpedienteSeleccionada.pacienteNombre || citaExpedienteSeleccionada.nombre }} {{ citaExpedienteSeleccionada.pacienteApellido }}
+                  Paciente: {{ citaExpedienteSeleccionada.nombrePaciente || citaExpedienteSeleccionada.pacienteNombre }} {{ citaExpedienteSeleccionada.pacienteApellido }}
                 </ion-card-title>
                 <ion-card-subtitle>
                   Fecha: {{ citaExpedienteSeleccionada.fecha }} - {{ citaExpedienteSeleccionada.hora }}
@@ -879,4 +931,71 @@
     </ng-template>
   </ion-modal>
 
+
+<!-- ========================================== -->
+  <!-- MODAL PARA AGENDAR NUEVA CITA (DOCTOR)     -->
+  <!-- ========================================== -->
+  <ion-modal [isOpen]="isModalNuevaCitaOpen" (didDismiss)="cerrarModalNuevaCita()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Agendar Nueva Cita</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModalNuevaCita()">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <ion-item class="ion-margin-bottom">
+          <ion-input 
+            label="Nombre del Paciente" 
+            labelPlacement="stacked" 
+            placeholder="Ingrese nombre completo" 
+            [(ngModel)]="nuevaCita.nombrePaciente">
+          </ion-input>
+        </ion-item>
+
+        <ion-item class="ion-margin-bottom">
+          <ion-input 
+            label="Teléfono" 
+            labelPlacement="stacked" 
+            placeholder="Número de teléfono" 
+            [(ngModel)]="nuevaCita.telefono">
+          </ion-input>
+        </ion-item>
+
+        <ion-item class="ion-margin-bottom">
+          <ion-input 
+            label="Fecha de la Cita" 
+            labelPlacement="stacked" 
+            type="date" 
+            [(ngModel)]="nuevaCita.fecha">
+          </ion-input>
+        </ion-item>
+
+        <ion-item class="ion-margin-bottom">
+          <ion-input 
+            label="Hora" 
+            labelPlacement="stacked" 
+            type="time" 
+            [(ngModel)]="nuevaCita.hora">
+          </ion-input>
+        </ion-item>
+
+        <ion-item class="ion-margin-bottom">
+          <ion-textarea 
+            label="Motivo de Consulta" 
+            labelPlacement="stacked" 
+            placeholder="Describa brevemente el motivo..." 
+            [(ngModel)]="nuevaCita.motivo">
+          </ion-textarea>
+        </ion-item>
+
+        <ion-button expand="block" color="primary" class="ion-margin-top" (click)="guardarNuevaCitaDoctor()">
+          Guardar y Confirmar Cita
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

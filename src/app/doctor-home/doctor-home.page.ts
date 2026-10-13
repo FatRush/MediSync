@@ -93,6 +93,7 @@ export class DoctorHomePage implements OnInit, OnDestroy {
     sábado: true,
     domingo: true
   };
+
   fechaBloqueadaNueva: string = '';
   diasBloqueados: string[] = [];
 
@@ -116,6 +117,7 @@ export class DoctorHomePage implements OnInit, OnDestroy {
   isModalExpedienteOpen: boolean = false;    
   citaSeleccionada: any = null;
   citaExpedienteSeleccionada: any = null;
+  isModalNuevaCitaOpen: boolean = false;
 
   // Formulario temporal de expediente
   expedienteForm = {
@@ -135,6 +137,19 @@ export class DoctorHomePage implements OnInit, OnDestroy {
     clasificacionImc: '',
     requiereProximaCita: false,
     fechaProximaCita: ''
+  };
+
+  fechaActual: Date = new Date();
+  private timer: any;
+
+  nuevaCita = {
+    pacienteId: '',
+    nombrePaciente: '',
+    fecha: '',
+    telefono: '',
+    hora: '',
+    motivo: '',
+    estado: 'confirmada' // El doctor las puede dejar confirmadas directamente
   };
 
   private citasUnsubscribe: Unsubscribe | null = null;
@@ -177,6 +192,10 @@ export class DoctorHomePage implements OnInit, OnDestroy {
       document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
     }
+
+    this.timer = setInterval(() => {
+      this.fechaActual = new Date();
+    }, 1000);
   }
 
   ngOnDestroy() {
@@ -186,7 +205,12 @@ export class DoctorHomePage implements OnInit, OnDestroy {
     if (this.plantillasUnsubscribe) {
       this.plantillasUnsubscribe();
     }
+
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
+  
 
   // === GESTIÓN DE PLANTILLAS EXCLUSIVAS POR DOCTOR ===
   escucharPlantillasDelDoctor() {
@@ -1113,5 +1137,112 @@ export class DoctorHomePage implements OnInit, OnDestroy {
 
   obtenFechaActual(): string {
     return new Date().toLocaleDateString('es-ES');
+  }
+
+ async cancelarCita(cita: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Cancelar Cita',
+      subHeader: `Paciente: ${cita.pacienteNombre || 'Paciente'}`,
+      message: 'Por favor, escribe el motivo de la cancelación para el registro de auditoría:',
+      inputs: [
+        {
+          name: 'motivo',
+          type: 'textarea',
+          placeholder: 'Ej. Emergencia médica, inasistencia del paciente...'
+        }
+      ],
+      buttons: [
+        { 
+          text: 'Volver', 
+          role: 'cancel' 
+        },
+        {
+          text: 'Confirmar Cancelación',
+          role: 'destructive',
+          handler: async (data) => {
+            // Validar que el usuario haya escrito un motivo
+            if (!data.motivo || data.motivo.trim() === '') {
+              this.mostrarToast('El motivo de cancelación es obligatorio');
+              return false; // Evita que se cierre la alerta si está vacío
+            }
+
+            try {
+              const citaRef = doc(this.firestore, 'citas', cita.id);
+              const fechaHoraActual = new Date();
+
+              const datosCancelacion = {
+                estado: 'cancelada',               // Coincide con tu filtro lowercase
+                motivoCancelacion: data.motivo.trim(), // Motivo ingresado en el cuadro de texto
+                canceladaEn: fechaHoraActual,       // Fecha y hora exacta (Auditoría)
+                canceladoPor: 'Doctor'             // Rol que ejecutó la acción (Auditoría)
+              };
+
+              // Actualizar en Firebase Firestore
+              await updateDoc(citaRef, datosCancelacion);
+
+              // Actualizar de forma local en el arreglo para ver el cambio instantáneo
+              cita.estado = 'cancelada';
+              cita.motivoCancelacion = data.motivo.trim();
+              cita.canceladaEn = fechaHoraActual;
+              cita.canceladoPor = 'Doctor';
+
+              this.mostrarToast('Cita cancelada correctamente');
+              return true;
+            } catch (error) {
+              console.error('Error al cancelar la cita:', error);
+              this.mostrarToast('Error al procesar la cancelación en la base de datos');
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+abrirModalNuevaCita() {
+    // 1. Limpiamos o inicializamos el formulario con todas las propiedades requeridas
+    this.nuevaCita = {
+      pacienteId: 'manual_' + new Date().getTime(), // ID temporal para citas creadas por el doctor
+      nombrePaciente: '',
+      telefono: '',
+      fecha: '',
+      hora: '',
+      motivo: '',
+      estado: 'confirmada'
+    };
+    
+    // 2. Controlamos correctamente la apertura del modal como booleano
+    this.isModalNuevaCitaOpen = true;
+  }
+
+  cerrarModalNuevaCita() {
+    this.isModalNuevaCitaOpen = false;
+  }
+
+  async guardarNuevaCitaDoctor() {
+    if (!this.nuevaCita.nombrePaciente || !this.nuevaCita.fecha || !this.nuevaCita.hora) {
+      this.mostrarToast('Por favor completa los campos obligatorios');
+      return;
+    }
+
+    try {
+      // Guardar directamente en la colección 'citas' de Firestore
+      const citaData = {
+        ...this.nuevaCita,
+        doctorNombre: this.nombreDoctor,
+        doctorCorreo: this.correoActual,
+        fechaCreacion: new Date()
+      };
+
+      await addDoc(collection(this.firestore, 'citas'), citaData);
+
+      this.mostrarToast('¡Cita creada y confirmada con éxito!');
+      this.isModalNuevaCitaOpen = false;
+    } catch (error) {
+      console.error('Error al guardar la cita:', error);
+      this.mostrarToast('Error al guardar la cita en la base de datos');
+    }
   }
 }
